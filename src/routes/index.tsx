@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Hero } from "@/components/sections/Hero";
+import { Mentor } from "@/components/sections/Mentor";
 import { Roadmap } from "@/components/sections/Roadmap";
 import { Features } from "@/components/sections/Features";
 import { Pricing } from "@/components/sections/Pricing";
+import { Testimonials } from "@/components/sections/Testimonials";
 import { Payment } from "@/components/sections/Payment";
+import { FAQ } from "@/components/sections/FAQ";
 import { Footer } from "@/components/sections/Footer";
 import { StickyCTA } from "@/components/StickyCTA";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
@@ -35,10 +38,13 @@ function Index() {
     <div className="min-h-screen bg-background text-foreground">
       <SonnerProvider />
       <Hero />
+      <Mentor />
       <Roadmap />
       <Features />
       <Pricing />
+      <Testimonials />
       <Payment />
+      <FAQ />
       <Footer />
       <WhatsAppFloat />
       <StickyCTA />
