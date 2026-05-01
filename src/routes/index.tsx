@@ -11,6 +11,7 @@ import { Footer } from "@/components/sections/Footer";
 import { StickyCTA } from "@/components/StickyCTA";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { SonnerProvider } from "@/components/SonnerProvider";
+import { UrgencyPopup } from "@/components/UrgencyPopup";
 
 export const Route = createFileRoute("/")({
   component: Index,
