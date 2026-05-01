@@ -1,12 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Send } from "lucide-react";
+
+const BATCHES = ["Online", "Offline", "Complete"] as const;
+type Batch = (typeof BATCHES)[number];
 
 const leadSchema = z.object({
   full_name: z.string().trim().min(2, "নাম কমপক্ষে ২ অক্ষরের হতে হবে").max(100),
@@ -15,16 +19,27 @@ const leadSchema = z.object({
     .string()
     .trim()
     .regex(/^[0-9+\-\s]{7,20}$/, "সঠিক মোবাইল নম্বর দিন"),
+  batch: z.enum(BATCHES),
 });
 
 interface Props {
   trigger: React.ReactNode;
+  defaultBatch?: Batch;
 }
 
-export function EnrollDialog({ trigger }: Props) {
+export function EnrollDialog({ trigger, defaultBatch = "Online" }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ full_name: "", ssc_roll: "", mobile_number: "" });
+  const [form, setForm] = useState({
+    full_name: "",
+    ssc_roll: "",
+    mobile_number: "",
+    batch: defaultBatch as Batch,
+  });
+
+  useEffect(() => {
+    if (open) setForm((f) => ({ ...f, batch: defaultBatch }));
+  }, [open, defaultBatch]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +56,7 @@ export function EnrollDialog({ trigger }: Props) {
       return;
     }
     toast.success("🎉 ধন্যবাদ! আমরা শীঘ্রই যোগাযোগ করব।");
-    setForm({ full_name: "", ssc_roll: "", mobile_number: "" });
+    setForm({ full_name: "", ssc_roll: "", mobile_number: "", batch: defaultBatch });
     setOpen(false);
   };
 
@@ -92,6 +107,22 @@ export function EnrollDialog({ trigger }: Props) {
               placeholder="01XXXXXXXXX"
               className="h-12 bg-input border-border focus:border-primary"
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="batch">Batch</Label>
+            <Select
+              value={form.batch}
+              onValueChange={(v) => setForm({ ...form, batch: v as Batch })}
+            >
+              <SelectTrigger id="batch" className="h-12 bg-input border-border">
+                <SelectValue placeholder="Select a batch" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Online">Online — ৳1,999</SelectItem>
+                <SelectItem value="Offline">Offline — ৳3,999 (Madaripur)</SelectItem>
+                <SelectItem value="Complete">Complete — ৳4,999 (Best Value)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Button
             type="submit"
