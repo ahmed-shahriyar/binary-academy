@@ -1,4 +1,5 @@
 import { CheckCircle2, Lock, Sparkles } from "lucide-react";
+import { DemoClassDialog } from "@/components/DemoClassDialog";
 
 const phases = [
   {
@@ -122,6 +123,17 @@ export function Roadmap() {
               );
             })}
           </div>
+        </div>
+
+        {/* Post-roadmap CTA */}
+        <div className="mt-16 flex flex-col items-center text-center">
+          <p className="font-mono text-xs text-[var(--cyber-cyan)] tracking-widest mb-3">
+            START YOUR JOURNEY
+          </p>
+          <DemoClassDialog />
+          <p className="mt-3 text-xs text-muted-foreground">
+            No payment required · 100% Free · Direct from Mentor
+          </p>
         </div>
       </div>
     </section>
