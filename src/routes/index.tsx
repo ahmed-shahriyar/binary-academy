@@ -49,6 +49,7 @@ function Index() {
       <Footer />
       <WhatsAppFloat />
       <StickyCTA />
+      <UrgencyPopup />
       {/* Bottom padding so sticky CTA doesn't cover content on mobile */}
       <div className="h-20 md:hidden" />
     </div>
