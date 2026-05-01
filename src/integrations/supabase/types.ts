@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       leads: {
         Row: {
+          batch: string | null
           created_at: string
           full_name: string
           id: string
@@ -23,6 +24,7 @@ export type Database = {
           ssc_roll: string
         }
         Insert: {
+          batch?: string | null
           created_at?: string
           full_name: string
           id?: string
@@ -30,6 +32,7 @@ export type Database = {
           ssc_roll: string
         }
         Update: {
+          batch?: string | null
           created_at?: string
           full_name?: string
           id?: string
