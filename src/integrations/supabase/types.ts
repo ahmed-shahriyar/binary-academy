@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           batch: string | null
           created_at: string
+          discount_code: string | null
           full_name: string
           id: string
           mobile_number: string
@@ -26,6 +27,7 @@ export type Database = {
         Insert: {
           batch?: string | null
           created_at?: string
+          discount_code?: string | null
           full_name: string
           id?: string
           mobile_number: string
@@ -34,6 +36,7 @@ export type Database = {
         Update: {
           batch?: string | null
           created_at?: string
+          discount_code?: string | null
           full_name?: string
           id?: string
           mobile_number?: string

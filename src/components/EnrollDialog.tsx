@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, Tag } from "lucide-react";
 
 const BATCHES = ["Online", "Offline", "Complete"] as const;
 type Batch = (typeof BATCHES)[number];
@@ -20,10 +20,11 @@ const leadSchema = z.object({
     .trim()
     .regex(/^[0-9+\-\s]{7,20}$/, "সঠিক মোবাইল নম্বর দিন"),
   batch: z.enum(BATCHES),
+  discount_code: z.string().trim().max(40).optional().or(z.literal("")),
 });
 
 interface Props {
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
   defaultBatch?: Batch;
 }
 
@@ -35,11 +36,27 @@ export function EnrollDialog({ trigger, defaultBatch = "Online" }: Props) {
     ssc_roll: "",
     mobile_number: "",
     batch: defaultBatch as Batch,
+    discount_code: "",
   });
 
   useEffect(() => {
     if (open) setForm((f) => ({ ...f, batch: defaultBatch }));
   }, [open, defaultBatch]);
+
+  // Listen for global events from the urgency popup
+  useEffect(() => {
+    const onApplyDiscount = (e: Event) => {
+      const code = (e as CustomEvent<{ code: string }>).detail?.code ?? "";
+      setForm((f) => ({ ...f, discount_code: code }));
+    };
+    const onOpen = () => setOpen(true);
+    window.addEventListener("binary:apply-discount", onApplyDiscount);
+    window.addEventListener("binary:open-enroll", onOpen);
+    return () => {
+      window.removeEventListener("binary:apply-discount", onApplyDiscount);
+      window.removeEventListener("binary:open-enroll", onOpen);
+    };
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,21 +66,25 @@ export function EnrollDialog({ trigger, defaultBatch = "Online" }: Props) {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.from("leads").insert(parsed.data);
+    const payload = {
+      ...parsed.data,
+      discount_code: parsed.data.discount_code || null,
+    };
+    const { error } = await supabase.from("leads").insert(payload);
     setLoading(false);
     if (error) {
       toast.error("সাবমিট করা যায়নি, আবার চেষ্টা করুন।");
       return;
     }
     toast.success("🎉 ধন্যবাদ! আমরা শীঘ্রই যোগাযোগ করব।");
-    setForm({ full_name: "", ssc_roll: "", mobile_number: "", batch: defaultBatch });
+    setForm({ full_name: "", ssc_roll: "", mobile_number: "", batch: defaultBatch, discount_code: "" });
     setOpen(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="bg-card border-glow-cyan max-w-md">
+      {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
+      <DialogContent className="bg-card border-glow-cyan max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl text-gradient-cyber">Claim Free Gift & Enroll</DialogTitle>
           <DialogDescription className="text-muted-foreground">
@@ -123,6 +144,28 @@ export function EnrollDialog({ trigger, defaultBatch = "Online" }: Props) {
                 <SelectItem value="Complete">Complete — ৳4,999 (Best Value)</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="discount" className="flex items-center gap-1.5">
+              <Tag className="h-3.5 w-3.5 text-[var(--cyber-amber)]" />
+              Discount Code <span className="text-xs text-muted-foreground font-normal">(optional)</span>
+            </Label>
+            <Input
+              id="discount"
+              value={form.discount_code}
+              onChange={(e) => setForm({ ...form, discount_code: e.target.value.toUpperCase() })}
+              placeholder="e.g. BINARY1000"
+              className={`h-12 bg-input border-border focus:border-primary font-mono tracking-wider ${
+                form.discount_code === "BINARY1000"
+                  ? "border-[var(--cyber-amber)] text-[var(--cyber-amber)]"
+                  : ""
+              }`}
+            />
+            {form.discount_code === "BINARY1000" ? (
+              <p className="text-xs text-[var(--cyber-amber)] font-mono">
+                ✓ ৳1,000 OFF applied — verified at checkout
+              </p>
+            ) : null}
           </div>
           <Button
             type="submit"
