@@ -53,14 +53,14 @@ export function Hero() {
               variant="outline"
               className="h-14 px-8 text-base font-mono border-[var(--cyber-cyan)] text-[var(--cyber-cyan)] hover:bg-[var(--cyber-cyan)]/10"
             >
-              View 5-Phase Roadmap →
+              View 7-Phase Roadmap →
             </Button>
           </a>
         </div>
 
         <div className="mt-12 grid grid-cols-3 max-w-lg mx-auto gap-4 text-center">
           {[
-            { v: "5", l: "Phases" },
+            { v: "7", l: "Phases" },
             { v: "A+", l: "Guarantee" },
             { v: "FREE", l: "AI Session" },
           ].map((s) => (

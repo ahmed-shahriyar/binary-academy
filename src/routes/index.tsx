@@ -21,11 +21,11 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "HSC ICT-er Bishwasto Saathi! Binary Academy SSC 2026 batch — 5-Phase Roadmap, FREE AI Session, online ৳1,999 · offline ৳3,999 (Madaripur). Enroll now & claim free gift.",
+          "HSC ICT-er Bishwasto Saathi! Binary Academy SSC 2026 batch — 7-Phase Roadmap, 54 lectures, FREE AI Session, online ৳1,999 · offline ৳3,999 (Madaripur). Enroll now & claim free gift.",
       },
       { name: "keywords", content: "HSC ICT Course, Binary Academy, SSC 26 ICT, HSC ICT Bangladesh, Madaripur ICT coaching, Logic Gates, C Programming" },
       { property: "og:title", content: "Binary Academy — HSC ICT Complete Course (SSC '26)" },
-      { property: "og:description", content: "5-Phase Roadmap · FREE AI Session · Online ৳1,999 · Offline ৳3,999. HSC ICT-er Bishwasto Saathi!" },
+      { property: "og:description", content: "7-Phase Roadmap · 54 Lectures · FREE AI Session · Online ৳1,999 · Offline ৳3,999. HSC ICT-er Bishwasto Saathi!" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Binary Academy — HSC ICT (SSC '26)" },
