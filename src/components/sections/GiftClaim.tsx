@@ -3,21 +3,21 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Gift, FileText, PlayCircle, Loader2 } from "lucide-react";
+import { Gift, FileText, PlayCircle, Loader2, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GiftSentDialog } from "@/components/GiftSentDialog";
 
+const phoneRegex = /^[0-9+\-\s]{7,20}$/;
+
 const schema = z.object({
   full_name: z.string().trim().min(2, "নাম কমপক্ষে ২ অক্ষরের হতে হবে").max(100),
-  whatsapp_number: z
-    .string()
-    .trim()
-    .regex(/^[0-9+\-\s]{7,20}$/, "সঠিক WhatsApp নম্বর দিন"),
+  phone_number: z.string().trim().regex(phoneRegex, "সঠিক Phone নম্বর দিন"),
+  whatsapp_number: z.string().trim().regex(phoneRegex, "সঠিক WhatsApp নম্বর দিন"),
 });
 
 export function GiftClaim() {
-  const [form, setForm] = useState({ full_name: "", whatsapp_number: "" });
+  const [form, setForm] = useState({ full_name: "", phone_number: "", whatsapp_number: "" });
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -29,14 +29,21 @@ export function GiftClaim() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.from("gift_claims").insert(parsed.data);
-    setLoading(false);
-    if (error) {
+    try {
+      // Securely insert into the `gifts` table via the Supabase JS client.
+      // The client uses VITE_SUPABASE_URL + VITE_SUPABASE_PUBLISHABLE_KEY
+      // from env vars (never hardcoded). RLS on `gifts` allows insert-only.
+      const { error } = await supabase.from("gifts").insert(parsed.data);
+      if (error) throw error;
+      toast.success("🎁 Gift added! Check your WhatsApp shortly.");
+      setForm({ full_name: "", phone_number: "", whatsapp_number: "" });
+      setShowSuccess(true);
+    } catch (err) {
+      console.error("[GiftClaim] insert failed", err);
       toast.error("সাবমিট করা যায়নি, আবার চেষ্টা করুন।");
-      return;
+    } finally {
+      setLoading(false);
     }
-    setForm({ full_name: "", whatsapp_number: "" });
-    setShowSuccess(true);
   };
 
   return (
