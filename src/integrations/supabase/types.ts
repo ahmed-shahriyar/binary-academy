@@ -35,6 +35,30 @@ export type Database = {
         }
         Relationships: []
       }
+      gifts: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          phone_number: string
+          whatsapp_number: string
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id?: string
+          phone_number: string
+          whatsapp_number: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone_number?: string
+          whatsapp_number?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           batch: string | null
