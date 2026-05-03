@@ -98,6 +98,22 @@ export function GiftClaim() {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="gift-phone" className="flex items-center gap-1.5">
+                <Phone className="h-3.5 w-3.5 text-[var(--cyber-green)]" />
+                Phone Number
+              </Label>
+              <Input
+                id="gift-phone"
+                type="tel"
+                inputMode="tel"
+                required
+                value={form.phone_number}
+                onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
+                placeholder="01XXXXXXXXX"
+                className="h-12 bg-input border-border focus:border-[var(--cyber-green)]"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="gift-wa">WhatsApp Number</Label>
               <Input
                 id="gift-wa"
