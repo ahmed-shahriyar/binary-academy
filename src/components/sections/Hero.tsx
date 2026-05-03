@@ -1,7 +1,7 @@
 import { BinaryRain } from "@/components/BinaryRain";
 import { EnrollDialog } from "@/components/EnrollDialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Gift } from "lucide-react";
+import { Sparkles, Gift, Rocket } from "lucide-react";
 import logo from "@/assets/binary-academy-logo.png";
 
 export function Hero() {
@@ -42,18 +42,19 @@ export function Hero() {
                 size="lg"
                 className="h-14 px-8 text-base font-bold bg-gradient-to-r from-[var(--cyber-cyan)] to-[var(--cyber-green)] text-black hover:opacity-90 animate-pulse-glow"
               >
-                <Gift className="mr-2 h-5 w-5" />
-                Claim Free Gift & Enroll
+                <Rocket className="mr-2 h-5 w-5" />
+                Enroll Now
               </Button>
             }
           />
-          <a href="#roadmap">
+          <a href="#gift-claim">
             <Button
               size="lg"
               variant="outline"
-              className="h-14 px-8 text-base font-mono border-[var(--cyber-cyan)] text-[var(--cyber-cyan)] hover:bg-[var(--cyber-cyan)]/10"
+              className="h-14 px-8 text-base font-bold border-2 border-[var(--cyber-green)] text-[var(--cyber-green)] hover:bg-[var(--cyber-green)]/10"
             >
-              View 7-Phase Roadmap →
+              <Gift className="mr-2 h-5 w-5" />
+              Claim Free Gifts
             </Button>
           </a>
         </div>
