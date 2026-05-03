@@ -121,6 +121,17 @@ export function EnrollDialog({ trigger, defaultBatch = "Online" }: Props) {
             />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="school">School / College</Label>
+            <Input
+              id="school"
+              required
+              value={form.school_name}
+              onChange={(e) => setForm({ ...form, school_name: e.target.value })}
+              placeholder="তোমার school বা college-এর নাম"
+              className="h-12 bg-input border-border focus:border-primary"
+            />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="mobile">Mobile Number</Label>
             <Input
               id="mobile"
@@ -176,7 +187,7 @@ export function EnrollDialog({ trigger, defaultBatch = "Online" }: Props) {
             disabled={loading}
             className="w-full h-12 bg-gradient-to-r from-[var(--cyber-cyan)] to-[var(--cyber-green)] text-black font-bold hover:opacity-90 animate-pulse-glow"
           >
-            {loading ? <Loader2 className="animate-spin" /> : <><Send className="mr-2 h-4 w-4" /> Submit & Get Free Gift</>}
+            {loading ? <Loader2 className="animate-spin" /> : <><Rocket className="mr-2 h-4 w-4" /> Confirm Enrollment</>}
           </Button>
         </form>
       </DialogContent>
