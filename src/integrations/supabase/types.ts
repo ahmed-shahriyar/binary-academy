@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      gift_claims: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          whatsapp_number: string
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id?: string
+          whatsapp_number: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          whatsapp_number?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           batch: string | null
@@ -22,6 +43,7 @@ export type Database = {
           full_name: string
           id: string
           mobile_number: string
+          school_name: string | null
           ssc_roll: string
         }
         Insert: {
@@ -31,6 +53,7 @@ export type Database = {
           full_name: string
           id?: string
           mobile_number: string
+          school_name?: string | null
           ssc_roll: string
         }
         Update: {
@@ -40,6 +63,7 @@ export type Database = {
           full_name?: string
           id?: string
           mobile_number?: string
+          school_name?: string | null
           ssc_roll?: string
         }
         Relationships: []

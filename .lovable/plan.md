@@ -1,106 +1,76 @@
+## Goal
+Cleanly separate the two CTAs that are currently merged inside `EnrollDialog` ("Claim Free Gift & Enroll"):
+- 🎁 **Gift Claim** — lightweight, body-of-page section. Just Name + WhatsApp.
+- 🚀 **Enroll Now** — full enrollment form, sticky/persistent in header & mobile bar.
 
-# Plan — Rebuild Roadmap as 7-Phase Interactive Accordion
+The two flows are connected: after claiming a gift, users get a success popup that nudges them into the full enrollment.
 
-## A few things to flag first
+---
 
-1. **Branding mismatch.** Your spec says the badge should read **"Udvash ICT Full Course · 2025/2026"**, but this site is **Binary Academy** (logo, footer, FAQ, SEO, WhatsApp message all say so). I'll default to **"Binary Academy ICT Full Course · 2025/2026"** to keep branding consistent. If you actually want "Udvash" (different brand), tell me and I'll switch — but you should also update the logo and the rest of the site.
+## 1. New `GiftClaim` section component
+File: `src/components/sections/GiftClaim.tsx`
 
-2. **5 → 7 phase ripple.** The Hero CTA, Hero stats, sticky CTA, FAQ and SEO meta currently advertise a **"5-Phase Roadmap"**. After this change the course is a **7-phase journey**. I'll update those references to "7-Phase Roadmap" so the site stays consistent.
+- Placed between `Mentor` and `Roadmap` in `src/routes/index.tsx`.
+- "Cyber-Box" card, max-width ~620px, centered, glowing **green** border (`var(--cyber-green)`) — visually distinct from the cyan enroll buttons.
+- Heading: "🎁 Claim Your Free Gifts" + subline listing what they get (Logic Gates PDF + Free Demo Class link), matching the leaflet promise.
+- Form fields (zod-validated):
+  - `full_name` — string, 2–100 chars
+  - `whatsapp_number` — `/^[0-9+\-\s]{7,20}$/`
+- Submit button: green gradient, label `🎁 Send My Gifts`.
+- On submit: insert into `public.gift_claims` table (new), then open the success popup.
 
-3. **SSC '26 vs HSC.** The current hero targets the **SSC '26 batch** for HSC ICT (i.e. students in class 10 now, going into HSC). Your new Phase content (54 lectures · 10 weeks · A+) reads like a **current HSC '26 candidate**'s crash schedule. I'll keep both audiences addressable by leaving Hero as-is but making the new roadmap header neutral. Flag if you want me to retarget the whole site to HSC '26 candidates instead.
+## 2. New DB table — `public.gift_claims`
+Migration creating:
+- `id uuid pk default gen_random_uuid()`
+- `full_name text not null`
+- `whatsapp_number text not null`
+- `created_at timestamptz default now()`
+- RLS enabled; policy: `insert` allowed to `anon` + `authenticated` (public lead capture, same pattern as existing `leads` table). No select policy → write-only from the client.
 
-4. **Demo CTA placement.** The "Join Free Demo Class" button currently lives at the bottom of the Roadmap section. I'll keep it directly below the new accordion (after Phase 06).
+## 3. Success popup — `GiftSentDialog`
+File: `src/components/GiftSentDialog.tsx`
 
-## What gets built
+- Controlled `Dialog` opened by `GiftClaim` after successful submit.
+- Content:
+  - Big check / gift icon, headline: **"Gifts Sent!"**
+  - Body: "Check your WhatsApp for the **Logic Gates PDF** and your **Free Demo Class** link."
+- Big high-contrast CTA button: **🚀 Join the SSC '26 Batch Now** (cyan→green gradient, pulsing) — on click, closes this popup and dispatches the existing `binary:open-enroll` window event so `EnrollDialog` opens with the full form.
+- Secondary ghost link: "Maybe later".
 
-### New file: `src/components/sections/Roadmap.tsx` (full rewrite)
+## 4. Refactor `EnrollDialog` → enrollment-only
+File: `src/components/EnrollDialog.tsx`
 
-Replaces the existing 5-phase timeline with a controlled accordion + interactive progress bar.
+- Remove the "Free Gift" framing. Title becomes **"🚀 Enroll — SSC '26 Batch"**, description focused on enrollment.
+- Submit button label: `Confirm Enrollment` (no more "Get Free Gift").
+- Keep all existing fields (Name, SSC Roll/Year, Mobile, Batch, Discount Code) and existing `binary:open-enroll` / `binary:apply-discount` listeners — `GiftSentDialog` and `UrgencyPopup` both continue to use that event.
+- (Note: per spec the enroll form should also include School/Payment, but the existing leads schema doesn't have those columns. I'll add a `school_name` text column to `public.leads` and a School field to the form. Payment selection is already represented by the Batch dropdown + the separate `Payment` section on the page — I'll leave payment instructions there rather than embedding payment in the dialog. Flag this in the final message so the user can request more if needed.)
 
-**Header block** (centered):
-- Pulsing-dot badge: "Binary Academy ICT Full Course · 2025/2026"
-- H1: "Your Roadmap to **HSC ICT A+**" (last 3 words: cyan→violet gradient)
-- Mono subtitle: "54 lectures · 6 chapters · 7 phases · engineered for A+"
-- 4-stat strip (single bordered flex pill, vertical dividers): **54 Lectures · 6 Chapters · 10 Weeks · A+**
+## 5. Button placement / sticky behavior
+- **Header / Hero (`Hero.tsx`)**: replace the existing "Claim Free Gift & Enroll" CTA with a 🚀 **Enroll Now** button (opens `EnrollDialog`). Add a secondary ghost button 🎁 **Claim Free Gifts** that smooth-scrolls to `#gift-claim`.
+- **Mobile sticky (`StickyCTA.tsx`)**: keep as 🚀 **Enroll Now** only (single sticky action, no gift conflation).
+- **Body**: the new `GiftClaim` section is the only place the gift form lives.
+- All other existing 🚀 enroll triggers (Pricing, Roadmap banner, Urgency popup) continue to open `EnrollDialog` unchanged.
 
-**7-segment progress bar** directly under header:
-- Full width, 7 segments, 2px tall, gap 4px, each rounded
-- Segment colored in its phase accent only when that phase is open; otherwise muted
-- Click a segment → smooth-scroll to the card and open it
+## 6. Visual language separation
+- 🎁 Gift = green (`--cyber-green`) glow + "Cyber-Box" border.
+- 🚀 Enroll = cyan→green gradient pulse (existing).
+- Icons used consistently across Hero, sticky bar, popup CTA, and section headings.
 
-**Enrollment banner** (between header and Phase 00):
-- Full-width rounded card, subtle cyan glowing border
-- Left side: batch name "**SSC '26 / HSC '26 Batch**", timing "Starts Week 1 · 10-Week Sprint", seat counter ("32 / 50 seats taken — filling fast", with pulsing red dot)
-- Middle: price (reuses `৳3,999` Offline tier from current Pricing for consistency) + included-features bullets (Live Classes · Recorded Backup · PDF Notes · Mock Tests)
-- Right: accepted payment icons (bKash, Nagad, Rocket — using lucide/text labels) + bold cyan **"Enroll Now"** CTA that opens existing `EnrollDialog`
-- All labels in `font-mono`
+---
 
-**7 Phase Accordion Cards** (vertical stack, gap 12px):
-- Controlled state: `openPhase: number | null` (only one open at a time, matched to the progress bar)
-- Card: `rounded-[14px]`, `1px` border that switches to phase color + colored glow when open
-- Body uses `display: grid; grid-template-rows: 0fr → 1fr` transition (smooth height animation)
-- Staggered fade-up on initial mount (CSS keyframe + `animation-delay: i * 80ms`)
+## Files
+**Create**
+- `src/components/sections/GiftClaim.tsx`
+- `src/components/GiftSentDialog.tsx`
+- `supabase/migrations/<ts>_gift_claims_and_school.sql` (new `gift_claims` table + RLS + `leads.school_name` column)
 
-**Card header** (clickable button, full row):
-- Left: 46×46 rounded-square number badge (e.g. "00", "01"…). When open: solid phase-color background + glow `box-shadow`. When closed: subtle outline.
-- Then mono phase tag (e.g. "PHASE 01 · CHAPTER 3") + bold phase title (e.g. "Digital Logic & Number Systems")
-- Right: lecture count chip ("• 16 Lectures"), week pill in phase color ("Week 1–3"), chevron rotating 180° on open
+**Edit**
+- `src/routes/index.tsx` — mount `<GiftClaim />`
+- `src/components/EnrollDialog.tsx` — re-theme as enroll-only, add School field
+- `src/components/sections/Hero.tsx` — split into 🚀 Enroll + 🎁 Claim Gifts buttons
+- `src/components/StickyCTA.tsx` — relabel to 🚀 Enroll Now (icon + copy)
 
-**Card body** (2-col on `md+`, 1-col on mobile):
-- **Left col — lecture list:** each row = small phase-colored code badge (`ICT-01`, `PRE-01`, `EXAM-01`, `AI-01`) + lecture description. "DO NOT SKIP" appears as an inline red pill on ICT-14 and ICT-15.
-- **Right col — Goal box:** subtle bg, rounded border, "Phase Goal" mono label, goal copy, then a wrapped chip row (each chip = phase-tinted), then a left-bordered tip box (border-left 3px in phase color, mono tip label like "Note", "Warning Zone", "Winning Move", "Pro Tip", "Elite Tip", "Gift")
-- **Phase 02 extra:** cross-link callout above the goal box ("Logic gates in Phase 01 taught you AND/OR/NOT — now apply that thinking directly in if-else and switch.")
-- **Phase 04 extra:** keyword callout ("This phase is won by vocabulary, not calculation. Build a flashcard deck.")
-- **Phase 05 special layout:** body splits into two halves with a thin divider and labels "DBMS Content" and "Exam Simulation Mode". Left half lists ICT-47…54, right half lists EXAM-01…04.
-- **Phase 06 header:** also shows a glowing pink **"FREE BONUS"** pill
-- **Phase 03 header:** also shows an emerald **"Recovery Week"** pill
+No changes to `UrgencyPopup`, `Pricing`, `Roadmap`, `Payment`, `FAQ` — they keep working via the existing `binary:open-enroll` event.
 
-All 7 phases use the exact lecture lists, goals, chips, and tips you provided.
-
-### Color tokens
-
-Phase colors used inline (not added to global theme to avoid tailwind-config churn):
-- Phase 00 / 01: `#00d4ff` (cyan)
-- Phase 02: `#a78bfa` (violet)
-- Phase 03: `#34d399` (emerald)
-- Phase 04: `#f87171` (red)
-- Phase 05: `#fbbf24` (amber)
-- Phase 06: `#f472b6` (pink)
-
-The H1 gradient uses cyan → violet (`#00d4ff` → `#a78bfa`) per spec.
-
-### Edits to `src/styles.css`
-
-Add a few small keyframes/utilities:
-- `@keyframes phase-fade-up` + `.animate-phase-in` (used with inline `animation-delay`)
-- `@keyframes seat-pulse` for the red "filling fast" dot (reuse if similar exists)
-- No removals; only additions.
-
-### Site-wide consistency edits
-
-- **`src/components/sections/Hero.tsx`** — change "View 5-Phase Roadmap →" → "View 7-Phase Roadmap →", change stat tile "5 Phases" → "7 Phases".
-- **`src/components/StickyCTA.tsx`** — if it mentions "5-Phase", update to "7-Phase". (Will verify on edit.)
-- **`src/components/sections/FAQ.tsx`** — same scan/replace if "5-phase" appears.
-- **`src/routes/index.tsx`** — update the `og:description` and `description` meta from "5-Phase Roadmap" to "7-Phase Roadmap".
-
-### What stays untouched
-
-- Hero, Mentor, Features, Pricing, Testimonials, Payment, Footer sections (visuals, content)
-- EnrollDialog, UrgencyPopup, WhatsAppFloat, DemoClassDialog
-- Supabase schema (no DB changes — this is a pure UI rebuild)
-- Global cyber-tech aesthetic, fonts, existing animations
-
-## File summary
-
-- **Rewrite:** `src/components/sections/Roadmap.tsx`
-- **Edit:** `src/styles.css` (additive only), `src/components/sections/Hero.tsx`, `src/routes/index.tsx`, `src/components/StickyCTA.tsx` and `src/components/sections/FAQ.tsx` (only if they mention "5-phase")
-- **No new dependencies, no new routes, no DB migration.**
-
-## Suggested extras (only if you want them — say yes/no)
-
-- **Sticky mini progress bar**: when the Roadmap section is in view, pin the 7-segment bar to the top of the viewport so users can navigate phases while scrolling through cards.
-- **"Open all / Collapse all" toggle** above the accordion, useful for users who want to scan or print the syllabus.
-- **`localStorage` "phase complete" checkboxes** — let students tick off lectures they've finished; pure client-side, gives the page repeat-visit value.
-- **Auto-open Phase 00 on first load** so the page never appears as a wall of closed cards.
-
-Tell me which extras (if any) to include and confirm the **"Binary Academy" vs "Udvash"** branding question, then I'll build it.
+## Open question
+The spec mentions enrollment fields like "School, Payment". I'll add a **School** field to the enroll dialog and add `school_name` to `leads`. Payment will continue to live in the dedicated `Payment` section (bKash instructions) rather than as a step inside the dialog — let me know if you'd prefer payment integrated into the dialog as a final step instead.

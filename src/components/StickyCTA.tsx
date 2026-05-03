@@ -8,7 +8,7 @@ export function StickyCTA() {
       <EnrollDialog
         trigger={
           <Button className="w-full h-12 font-bold bg-gradient-to-r from-[var(--cyber-cyan)] to-[var(--cyber-green)] text-black animate-pulse-glow">
-            <Rocket className="mr-2 h-5 w-5" /> Enroll Now — Free Gift!
+            <Rocket className="mr-2 h-5 w-5" /> Enroll Now — SSC '26
           </Button>
         }
       />
