@@ -3,21 +3,21 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Gift, FileText, PlayCircle, Loader2, Phone } from "lucide-react";
+import { Gift, FileText, PlayCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GiftSentDialog } from "@/components/GiftSentDialog";
 
-const phoneRegex = /^[0-9+\-\s]{7,20}$/;
-
 const schema = z.object({
   full_name: z.string().trim().min(2, "নাম কমপক্ষে ২ অক্ষরের হতে হবে").max(100),
-  phone_number: z.string().trim().regex(phoneRegex, "সঠিক Phone নম্বর দিন"),
-  whatsapp_number: z.string().trim().regex(phoneRegex, "সঠিক WhatsApp নম্বর দিন"),
+  whatsapp_number: z
+    .string()
+    .trim()
+    .regex(/^[0-9+\-\s]{7,20}$/, "সঠিক WhatsApp নম্বর দিন"),
 });
 
 export function GiftClaim() {
-  const [form, setForm] = useState({ full_name: "", phone_number: "", whatsapp_number: "" });
+  const [form, setForm] = useState({ full_name: "", whatsapp_number: "" });
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -29,21 +29,14 @@ export function GiftClaim() {
       return;
     }
     setLoading(true);
-    try {
-      // Securely insert into the `gifts` table via the Supabase JS client.
-      // The client uses VITE_SUPABASE_URL + VITE_SUPABASE_PUBLISHABLE_KEY
-      // from env vars (never hardcoded). RLS on `gifts` allows insert-only.
-      const { error } = await supabase.from("gifts").insert(parsed.data);
-      if (error) throw error;
-      toast.success("🎁 Gift added! Check your WhatsApp shortly.");
-      setForm({ full_name: "", phone_number: "", whatsapp_number: "" });
-      setShowSuccess(true);
-    } catch (err) {
-      console.error("[GiftClaim] insert failed", err);
+    const { error } = await supabase.from("gift_claims").insert(parsed.data);
+    setLoading(false);
+    if (error) {
       toast.error("সাবমিট করা যায়নি, আবার চেষ্টা করুন।");
-    } finally {
-      setLoading(false);
+      return;
     }
+    setForm({ full_name: "", whatsapp_number: "" });
+    setShowSuccess(true);
   };
 
   return (
@@ -94,22 +87,6 @@ export function GiftClaim() {
                 value={form.full_name}
                 onChange={(e) => setForm({ ...form, full_name: e.target.value })}
                 placeholder="তোমার পুরো নাম"
-                className="h-12 bg-input border-border focus:border-[var(--cyber-green)]"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="gift-phone" className="flex items-center gap-1.5">
-                <Phone className="h-3.5 w-3.5 text-[var(--cyber-green)]" />
-                Phone Number
-              </Label>
-              <Input
-                id="gift-phone"
-                type="tel"
-                inputMode="tel"
-                required
-                value={form.phone_number}
-                onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
-                placeholder="01XXXXXXXXX"
                 className="h-12 bg-input border-border focus:border-[var(--cyber-green)]"
               />
             </div>
