@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Gift, FileText, PlayCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseExternal as supabase } from "@/integrations/supabase/external-client";
 import { GiftSentDialog } from "@/components/GiftSentDialog";
 
 const schema = z.object({
