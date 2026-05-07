@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { supabaseExternal as supabase } from "@/integrations/supabase/external-client";
 import { Loader2, Rocket, Tag } from "lucide-react";
 
-const BATCHES = ["Online", "Offline", "Complete"] as const;
+const BATCHES = ["Online Pro", "Offline FLEX", "Offline Hybrid"] as const;
 type Batch = (typeof BATCHES)[number];
 
 const leadSchema = z.object({
@@ -29,7 +29,7 @@ interface Props {
   defaultBatch?: Batch;
 }
 
-export function EnrollDialog({ trigger, defaultBatch = "Online" }: Props) {
+export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -154,9 +154,9 @@ export function EnrollDialog({ trigger, defaultBatch = "Online" }: Props) {
                 <SelectValue placeholder="Select a batch" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Online">Online — ৳1,999</SelectItem>
-                <SelectItem value="Offline">Offline — ৳3,999 (Madaripur)</SelectItem>
-                <SelectItem value="Complete">Complete — ৳4,999 (Best Value)</SelectItem>
+                <SelectItem value="Online Pro">Online Pro — ৳2,449</SelectItem>
+                <SelectItem value="Offline Hybrid">Offline Hybrid — ৳3,989 (Best Value)</SelectItem>
+                <SelectItem value="Offline FLEX">Offline FLEX — ৳6,000 (৳1,000/mo)</SelectItem>
               </SelectContent>
             </Select>
           </div>
