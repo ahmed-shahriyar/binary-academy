@@ -29,7 +29,7 @@ interface Props {
   defaultBatch?: Batch;
 }
 
-export function EnrollDialog({ trigger, defaultBatch = "Online" }: Props) {
+export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
