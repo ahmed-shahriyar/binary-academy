@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { ChevronDown, Check, Zap, Wallet, BookOpen, FileText, Video, ClipboardCheck } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 import { DemoClassDialog } from "@/components/DemoClassDialog";
-import { EnrollDialog } from "@/components/EnrollDialog";
-import { Button } from "@/components/ui/button";
 
 // ---------- Types ----------
 type Lecture = {
