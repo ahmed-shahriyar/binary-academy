@@ -1,4 +1,5 @@
 import { Facebook, Youtube } from "lucide-react";
+import mentorPhoto from "@/assets/mentor.png";
 
 export function Mentor() {
   return (
@@ -16,16 +17,20 @@ export function Mentor() {
           style={{ maxWidth: 600, background: "#0A0F1A" }}
         >
           <div
-            className="mx-auto rounded-full overflow-hidden flex items-center justify-center font-mono text-3xl text-[var(--cyber-cyan)] bg-background"
+            className="mx-auto rounded-full overflow-hidden bg-background"
             style={{
-              width: 120,
-              height: 120,
+              width: 160,
+              height: 160,
               border: "3px solid #00FFFF",
-              boxShadow: "0 0 24px #00FFFF, 0 0 48px rgba(0,255,255,0.4)",
+              boxShadow: "0 0 28px #00FFFF, 0 0 56px rgba(0,255,255,0.45)",
             }}
-            aria-label="Mentor profile placeholder"
           >
-            AS
+            <img
+              src={mentorPhoto}
+              alt="Ahmed Shahriyar — Mentor at Binary Academy"
+              loading="lazy"
+              className="w-full h-full object-cover"
+            />
           </div>
 
           <h3 className="mt-5 text-2xl font-bold">Ahmed Shahriyar</h3>
@@ -40,7 +45,7 @@ export function Mentor() {
 
           <div className="mt-6 flex items-center justify-center gap-4">
             <a
-              href="https://facebook.com/binaryacademybd"
+              href="https://www.facebook.com/ahmed.shahariyar.12"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook"
@@ -49,7 +54,7 @@ export function Mentor() {
               <Facebook className="h-5 w-5" />
             </a>
             <a
-              href="https://youtube.com/@binaryacademybd"
+              href="https://www.youtube.com/@binaryAcademyICT"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="YouTube"

@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { ChevronDown, Check, Zap, Wallet, BookOpen, FileText, Video, ClipboardCheck } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 import { DemoClassDialog } from "@/components/DemoClassDialog";
-import { EnrollDialog } from "@/components/EnrollDialog";
-import { Button } from "@/components/ui/button";
 
 // ---------- Types ----------
 type Lecture = {
@@ -591,78 +589,6 @@ export function Roadmap() {
           })}
         </div>
 
-        {/* ENROLLMENT BANNER */}
-        <div
-          className="mt-8 rounded-2xl p-5 md:p-6 bg-card/60 backdrop-blur"
-          style={{
-            border: "1px solid rgba(0, 212, 255, 0.4)",
-            boxShadow: "0 0 24px rgba(0, 212, 255, 0.18), inset 0 0 30px rgba(0, 212, 255, 0.04)",
-          }}
-        >
-          <div className="grid md:grid-cols-3 gap-5 md:gap-6 items-center">
-            {/* Left: batch + seats */}
-            <div>
-              <p className="font-mono text-[10px] tracking-widest text-[var(--cyber-cyan)]">CURRENT BATCH</p>
-              <h3 className="text-lg md:text-xl font-bold mt-1">SSC '26 / HSC '26 Batch</h3>
-              <p className="text-xs text-muted-foreground font-mono mt-0.5">Starts Week 1 · 10-Week Sprint</p>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
-                </span>
-                <span className="text-xs font-mono text-red-400">32 / 50 seats taken — filling fast</span>
-              </div>
-            </div>
-
-            {/* Middle: price + includes */}
-            <div className="md:border-x md:border-border md:px-6">
-              <p className="font-mono text-[10px] tracking-widest text-[var(--cyber-cyan)]">PRICE</p>
-              <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-2xl md:text-3xl font-mono font-bold">৳3,999</span>
-                <span className="text-xs text-muted-foreground">/full course</span>
-              </div>
-              <ul className="mt-3 space-y-1">
-                {[
-                  { i: <Video className="h-3 w-3" />, t: "Live Classes" },
-                  { i: <BookOpen className="h-3 w-3" />, t: "Recorded Backup" },
-                  { i: <FileText className="h-3 w-3" />, t: "PDF Notes" },
-                  { i: <ClipboardCheck className="h-3 w-3" />, t: "Mock Tests" },
-                ].map((f) => (
-                  <li key={f.t} className="flex items-center gap-2 text-xs text-foreground/85">
-                    <Check className="h-3 w-3 text-[var(--cyber-green)]" /> {f.t}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Right: payment + CTA */}
-            <div>
-              <p className="font-mono text-[10px] tracking-widest text-[var(--cyber-cyan)]">ACCEPTED PAYMENT</p>
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {["bKash", "Nagad", "Rocket", "Bank"].map((pay) => (
-                  <span
-                    key={pay}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono border border-border bg-background/50"
-                  >
-                    <Wallet className="h-3 w-3 text-[var(--cyber-cyan)]" /> {pay}
-                  </span>
-                ))}
-              </div>
-              <EnrollDialog
-                trigger={
-                  <Button
-                    className="mt-4 w-full h-12 font-bold text-black animate-pulse-glow"
-                    style={{
-                      background: "linear-gradient(135deg, #00d4ff 0%, #00FFFF 100%)",
-                    }}
-                  >
-                    <Zap className="mr-2 h-4 w-4" /> Enroll Now
-                  </Button>
-                }
-              />
-            </div>
-          </div>
-        </div>
 
         {/* PHASE ACCORDION */}
         <div className="mt-10 flex flex-col gap-3">

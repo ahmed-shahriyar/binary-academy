@@ -7,7 +7,7 @@ const faqs = [
   },
   {
     q: "Where is the offline branch?",
-    a: "Our offline classroom is in Gateupa, Delina, Madaripur. Direct classes, printed sheets, and one-on-one mentorship happen on-site.",
+    a: "Our offline classroom is in Mukterpara, Netrokona. Direct classes, printed sheets, and one-on-one mentorship happen on-site.",
   },
   {
     q: "Is there a demo class?",
