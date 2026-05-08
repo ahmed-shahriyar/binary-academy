@@ -18,11 +18,11 @@ export function Footer() {
         </div>
         <div className="text-sm space-y-2">
           <p className="font-mono text-[var(--cyber-cyan)] uppercase text-xs tracking-widest">Follow</p>
-          <a href="https://fb.com/BinaryAcademyBD" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-[var(--cyber-cyan)]">
-            <Facebook className="h-4 w-4" /> fb.com/BinaryAcademyBD
+          <a href="https://www.facebook.com/ahmed.shahariyar.12" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-[var(--cyber-cyan)]">
+            <Facebook className="h-4 w-4" /> Ahmed Shahriyar
           </a>
-          <a href="https://youtube.com/@BinaryAcademy" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-[var(--cyber-cyan)]">
-            <Youtube className="h-4 w-4" /> @BinaryAcademy
+          <a href="https://www.youtube.com/@binaryAcademyICT" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-[var(--cyber-cyan)]">
+            <Youtube className="h-4 w-4" /> @binaryAcademyICT
           </a>
         </div>
       </div>
