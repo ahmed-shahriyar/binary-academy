@@ -13,7 +13,7 @@ export function Footer() {
         </div>
         <div className="text-sm space-y-2">
           <p className="font-mono text-[var(--cyber-cyan)] uppercase text-xs tracking-widest">যোগাযোগ</p>
-          <p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[var(--cyber-green)]" /> মাদারীপুর, নেছারাবাদ</p>
+          <p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[var(--cyber-green)]" /> Mukterpara, Netrokona</p>
           <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-[var(--cyber-green)]" /> WhatsApp: 01580611996</p>
         </div>
         <div className="text-sm space-y-2">
