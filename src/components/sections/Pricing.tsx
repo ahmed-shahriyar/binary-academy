@@ -14,6 +14,8 @@ type Tier = {
   variant: "cyan" | "amber" | "hybrid";
   badge?: string;
   location?: string;
+  earlyBirdPrice?: string;
+  earlyBirdLabel?: string;
 };
 
 const tiers: Tier[] = [
@@ -21,6 +23,8 @@ const tiers: Tier[] = [
     name: "ONLINE PRO",
     batch: "Online Pro",
     price: "২,৪৪৯",
+    earlyBirdPrice: "১,৪৪৯",
+    earlyBirdLabel: "🔥 ৳1,449 for first 10 students!",
     description: "Full digital learning experience for remote students.",
     perks: [
       "Live Interactive Classes",
@@ -30,11 +34,14 @@ const tiers: Tier[] = [
       "Auto-Graded Quizzes",
     ],
     variant: "cyan",
+    badge: "EARLY BIRD: 10 SLOTS",
   },
   {
     name: "OFFLINE HYBRID",
     batch: "Offline Hybrid",
     price: "৩,৯৮৯",
+    earlyBirdPrice: "২,৯৮৯",
+    earlyBirdLabel: "🔥 ৳2,989 for first 10 students!",
     description: "Ultimate combo: in-person learning in Netrokona + full digital access.",
     perks: [
       "Includes ALL Online Pro Features",
@@ -43,7 +50,7 @@ const tiers: Tier[] = [
       "Priority 'Fast-Track' Support",
     ],
     variant: "hybrid",
-    badge: "BEST VALUE",
+    badge: "EARLY BIRD: 10 SLOTS",
   },
   {
     name: "OFFLINE FLEX",
@@ -132,8 +139,13 @@ export function Pricing() {
               >
                 {t.badge && (
                   <div
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-3 py-1 rounded-full text-black text-xs font-bold whitespace-nowrap"
-                    style={{ background: s.badgeBg }}
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-3 py-1 rounded-full text-white text-[11px] font-bold whitespace-nowrap font-mono tracking-wider animate-pulse"
+                    style={{
+                      background: "linear-gradient(135deg, #FF3B30, #FF6A00)",
+                      boxShadow:
+                        "0 0 12px rgba(255, 106, 0, 0.6), 0 0 24px rgba(255, 59, 48, 0.4)",
+                      border: "1px solid rgba(255, 180, 80, 0.6)",
+                    }}
                   >
                     <Crown className="h-3 w-3" /> {t.badge}
                   </div>
@@ -160,10 +172,35 @@ export function Pricing() {
                   {t.description}
                 </p>
 
-                <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-4xl md:text-5xl font-bold font-mono">৳{t.price}</span>
-                  <span className="text-muted-foreground">/-</span>
+                <div className="mt-4 flex items-baseline gap-2 flex-wrap">
+                  {t.earlyBirdPrice ? (
+                    <>
+                      <span className="text-4xl md:text-5xl font-bold font-mono text-[#FF6A00]">
+                        ৳{t.earlyBirdPrice}
+                      </span>
+                      <span className="text-xl font-mono text-muted-foreground line-through decoration-[#FF3B30]/70 decoration-2">
+                        ৳{t.price}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-4xl md:text-5xl font-bold font-mono">৳{t.price}</span>
+                      <span className="text-muted-foreground">/-</span>
+                    </>
+                  )}
                 </div>
+                {t.earlyBirdLabel && (
+                  <p
+                    className="mt-2 inline-block font-mono text-sm font-bold animate-pulse"
+                    style={{
+                      color: "#FFB347",
+                      textShadow:
+                        "0 0 8px rgba(255, 106, 0, 0.7), 0 0 16px rgba(255, 59, 48, 0.4)",
+                    }}
+                  >
+                    {t.earlyBirdLabel}
+                  </p>
+                )}
                 {t.priceNote && (
                   <p className="mt-1 inline-flex items-center gap-1 font-mono text-sm font-bold text-[var(--cyber-amber)]">
                     <Calendar className="h-3.5 w-3.5" /> {t.priceNote}
