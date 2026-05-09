@@ -6,12 +6,7 @@ type Item = {
   quote: string;
 };
 
-const accents = [
-  "var(--cyber-cyan)",
-  "var(--cyber-green)",
-  "var(--cyber-amber)",
-  "oklch(0.65 0.22 285)",
-] as const;
+const accents = ["var(--cyber-cyan)", "var(--cyber-green)", "var(--cyber-amber)", "oklch(0.65 0.22 285)"] as const;
 
 const batches: { year: string; items: Item[] }[] = [
   {
@@ -62,7 +57,7 @@ const batches: { year: string; items: Item[] }[] = [
         name: "তৌহিদ ইসলাম",
         college: "আবু আব্বাস কলেজ",
         quote:
-          "আমাদের school থেকে আগের বছরগুলোতে ICT-তে A+ খুব কম আসতো। আমাদের batch-এ হঠাৎ অনেকে A+ পেল। পার্থক্য একটাই ছিল — এই course।",
+          "আমাদের college থেকে আগের বছরগুলোতে ICT-তে A+ খুব কম আসতো। আমাদের batch-এ হঠাৎ অনেকে A+ পেল। পার্থক্য একটাই ছিল — এই course।",
       },
       {
         name: "আফরিন সুলতানা",
@@ -127,9 +122,7 @@ export function Testimonials() {
     <section id="testimonials" className="relative py-20 md:py-28 px-4">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-14">
-          <p className="font-mono text-xs text-[var(--cyber-cyan)] tracking-widest">
-            SECTION 06 · STUDENTS
-          </p>
+          <p className="font-mono text-xs text-[var(--cyber-cyan)] tracking-widest">SECTION 06 · STUDENTS</p>
           <h2 className="mt-2 text-3xl md:text-5xl font-bold">
             Real Students. <span className="text-gradient-cyber">Real Results.</span>
           </h2>
@@ -158,25 +151,17 @@ export function Testimonials() {
                       }}
                     >
                       <Quote className="h-7 w-7 mb-3" style={{ color: accent }} />
-                      <p className="text-sm md:text-base leading-relaxed text-foreground/90 flex-1">
-                        "{t.quote}"
-                      </p>
+                      <p className="text-sm md:text-base leading-relaxed text-foreground/90 flex-1">"{t.quote}"</p>
                       <div className="mt-6 pt-4 border-t border-white/10 flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <div className="font-bold truncate">{t.name}</div>
-                          <div
-                            className="text-xs font-mono mt-0.5"
-                            style={{ color: accent }}
-                          >
+                          <div className="text-xs font-mono mt-0.5" style={{ color: accent }}>
                             {t.college} — {b.year.replace(" Batch", "")}
                           </div>
                         </div>
                         <div className="flex gap-0.5 shrink-0">
                           {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className="h-3.5 w-3.5 fill-[var(--cyber-amber)] text-[var(--cyber-amber)]"
-                            />
+                            <Star key={i} className="h-3.5 w-3.5 fill-[var(--cyber-amber)] text-[var(--cyber-amber)]" />
                           ))}
                         </div>
                       </div>
