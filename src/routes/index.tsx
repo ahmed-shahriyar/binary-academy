@@ -12,6 +12,7 @@ import { Footer } from "@/components/sections/Footer";
 import { StickyCTA } from "@/components/StickyCTA";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { SonnerProvider } from "@/components/SonnerProvider";
+import { Preloader } from "@/components/Preloader";
 
 
 export const Route = createFileRoute("/")({
@@ -38,6 +39,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Preloader />
       <SonnerProvider />
       <Hero />
       <Mentor />
