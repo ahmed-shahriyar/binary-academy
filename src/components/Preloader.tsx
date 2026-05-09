@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import logo from "@/assets/binary-academy-logo.png";
+import logo from "@/assets/binary-academy-logo-transparent.png";
 
 export function Preloader() {
   const [progress, setProgress] = useState(0);
