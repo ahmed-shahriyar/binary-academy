@@ -297,3 +297,81 @@
   box-shadow: 0 0 18px oklch(0.86 0.16 196 / 0.55), 0 0 32px oklch(0.6 0.22 280 / 0.45);
   z-index: 5;
 }
+
+/* Hybrid card: animated conic neon rim */
+@property --hybrid-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes hybrid-conic-spin {
+  to { --hybrid-angle: 360deg; }
+}
+.hybrid-conic-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--hybrid-angle),
+    var(--cyber-cyan),
+    oklch(0.6 0.22 280),
+    var(--cyber-cyan),
+    oklch(0.6 0.22 280),
+    var(--cyber-cyan)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: hybrid-conic-spin 4s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Floating Early Bird badge */
+@keyframes early-bird-float {
+  0%, 100% {
+    transform: translateY(0) rotate(-6deg);
+    box-shadow: 0 0 14px rgba(255, 106, 0, 0.7), 0 0 28px rgba(255, 59, 48, 0.5);
+  }
+  50% {
+    transform: translateY(-4px) rotate(-6deg);
+    box-shadow: 0 0 22px rgba(255, 180, 70, 1), 0 0 44px rgba(255, 59, 48, 0.85);
+  }
+}
+.animate-early-bird-float {
+  animation: early-bird-float 1.8s ease-in-out infinite;
+}
+
+/* Hybrid permanent outer halo (mobile + desktop) */
+@keyframes hybrid-halo {
+  0%, 100% {
+    box-shadow:
+      0 0 30px color-mix(in oklab, var(--cyber-cyan) 35%, transparent),
+      0 0 70px oklch(0.6 0.22 280 / 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 45px color-mix(in oklab, var(--cyber-cyan) 55%, transparent),
+      0 0 100px oklch(0.6 0.22 280 / 0.6);
+  }
+}
+.animate-hybrid-halo {
+  animation: hybrid-halo 3.2s ease-in-out infinite;
+}
+
+/* 3D tilt on hover (desktop only) */
+@media (hover: hover) and (pointer: fine) {
+  .tilt-3d {
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    transform-style: preserve-3d;
+  }
+  .tilt-3d:hover {
+    transform: perspective(1000px) rotateX(4deg) rotateY(-5deg) translateY(-8px) scale(1.02);
+  }
+  .tilt-3d.is-hybrid:hover {
+    transform: perspective(1000px) rotateX(4deg) rotateY(-5deg) translateY(-8px) scale(1.17);
+  }
+}
