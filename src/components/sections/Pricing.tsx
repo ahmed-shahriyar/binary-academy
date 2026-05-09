@@ -14,6 +14,8 @@ type Tier = {
   variant: "cyan" | "amber" | "hybrid";
   badge?: string;
   location?: string;
+  earlyBirdPrice?: string;
+  earlyBirdLabel?: string;
 };
 
 const tiers: Tier[] = [
@@ -21,6 +23,8 @@ const tiers: Tier[] = [
     name: "ONLINE PRO",
     batch: "Online Pro",
     price: "২,৪৪৯",
+    earlyBirdPrice: "১,৪৪৯",
+    earlyBirdLabel: "🔥 ৳1,449 for first 10 students!",
     description: "Full digital learning experience for remote students.",
     perks: [
       "Live Interactive Classes",
@@ -30,11 +34,14 @@ const tiers: Tier[] = [
       "Auto-Graded Quizzes",
     ],
     variant: "cyan",
+    badge: "EARLY BIRD: 10 SLOTS",
   },
   {
     name: "OFFLINE HYBRID",
     batch: "Offline Hybrid",
     price: "৩,৯৮৯",
+    earlyBirdPrice: "২,৯৮৯",
+    earlyBirdLabel: "🔥 ৳2,989 for first 10 students!",
     description: "Ultimate combo: in-person learning in Netrokona + full digital access.",
     perks: [
       "Includes ALL Online Pro Features",
@@ -43,7 +50,7 @@ const tiers: Tier[] = [
       "Priority 'Fast-Track' Support",
     ],
     variant: "hybrid",
-    badge: "BEST VALUE",
+    badge: "EARLY BIRD: 10 SLOTS",
   },
   {
     name: "OFFLINE FLEX",
