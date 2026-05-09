@@ -56,8 +56,12 @@ export function Preloader() {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/40 to-background" />
 
       <div className="relative z-10 flex flex-col items-center px-6">
-        <div className="font-mono text-base md:text-lg text-gradient-cyber font-bold tracking-widest">
-          BINARY ACADEMY
+        <div className="binary-glitch font-mono text-xl md:text-3xl font-bold tracking-widest" data-text="BINARY ACADEMY">
+          <span aria-hidden="true" className="binary-glitch__binary binary-glitch__binary--top">01000010 01001001 01001110</span>
+          <span className="binary-glitch__text text-gradient-cyber">BINARY ACADEMY</span>
+          <span aria-hidden="true" className="binary-glitch__layer binary-glitch__layer--1">BINARY ACADEMY</span>
+          <span aria-hidden="true" className="binary-glitch__layer binary-glitch__layer--2">BINARY ACADEMY</span>
+          <span aria-hidden="true" className="binary-glitch__binary binary-glitch__binary--bottom">01000001 01000011 01000001 01000100</span>
         </div>
 
         {/* Progress bar */}
