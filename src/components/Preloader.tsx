@@ -56,12 +56,7 @@ export function Preloader() {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/40 to-background" />
 
       <div className="relative z-10 flex flex-col items-center px-6">
-        <img
-          src={logo}
-          alt=""
-          className="w-28 md:w-36 animate-pulse-glow drop-shadow-[0_0_30px_oklch(0.86_0.24_142_/_0.5)]"
-        />
-        <div className="mt-6 font-mono text-sm md:text-base text-gradient-cyber font-bold tracking-widest">
+        <div className="font-mono text-base md:text-lg text-gradient-cyber font-bold tracking-widest">
           BINARY ACADEMY
         </div>
 
