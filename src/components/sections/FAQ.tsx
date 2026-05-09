@@ -20,7 +20,7 @@ export function FAQ() {
     <section id="faq" className="relative py-20 md:py-28 px-4">
       <div className="container mx-auto max-w-3xl">
         <div className="text-center mb-10">
-          <p className="font-mono text-xs text-[var(--cyber-cyan)] tracking-widest">SECTION 08 · FAQ</p>
+          <p className="font-mono text-xs text-[var(--cyber-cyan)] tracking-widest">FAQ</p>
           <h2 className="mt-2 text-3xl md:text-5xl font-bold">
             Common <span className="text-gradient-cyber">Questions</span>
           </h2>
