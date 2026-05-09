@@ -18,6 +18,7 @@ type Tier = {
   earlyBirdLabel?: string;
 };
 
+// Order: Online Pro, Offline Hybrid (middle on mobile + desktop), Offline FLEX
 const tiers: Tier[] = [
   {
     name: "ONLINE PRO",
@@ -76,7 +77,8 @@ const styles = {
     btn: "linear-gradient(135deg, var(--cyber-cyan), oklch(0.7 0.16 220))",
     hoverBtn: "linear-gradient(135deg, oklch(0.95 0.18 196), var(--cyber-cyan))",
     glow: "0 0 22px color-mix(in oklab, var(--cyber-cyan) 25%, transparent)",
-    hoverGlow: "0 0 36px color-mix(in oklab, var(--cyber-cyan) 55%, transparent), 0 0 80px color-mix(in oklab, var(--cyber-cyan) 25%, transparent)",
+    hoverGlow:
+      "0 0 36px color-mix(in oklab, var(--cyber-cyan) 55%, transparent), 0 0 80px color-mix(in oklab, var(--cyber-cyan) 25%, transparent)",
     border: "1px solid color-mix(in oklab, var(--cyber-cyan) 45%, transparent)",
   },
   amber: {
@@ -84,7 +86,8 @@ const styles = {
     btn: "linear-gradient(135deg, var(--cyber-amber), oklch(0.72 0.16 65))",
     hoverBtn: "linear-gradient(135deg, oklch(0.88 0.2 60), var(--cyber-amber))",
     glow: "0 0 22px color-mix(in oklab, var(--cyber-amber) 25%, transparent)",
-    hoverGlow: "0 0 36px color-mix(in oklab, var(--cyber-amber) 55%, transparent), 0 0 80px color-mix(in oklab, var(--cyber-amber) 25%, transparent)",
+    hoverGlow:
+      "0 0 36px color-mix(in oklab, var(--cyber-amber) 55%, transparent), 0 0 80px color-mix(in oklab, var(--cyber-amber) 25%, transparent)",
     border: "1px solid color-mix(in oklab, var(--cyber-amber) 45%, transparent)",
   },
   hybrid: {
@@ -92,7 +95,8 @@ const styles = {
     btn: "linear-gradient(135deg, var(--cyber-cyan), oklch(0.6 0.22 280))",
     hoverBtn: "linear-gradient(135deg, oklch(0.95 0.18 196), oklch(0.65 0.24 290))",
     glow: "0 0 36px color-mix(in oklab, var(--cyber-cyan) 45%, transparent), 0 0 70px oklch(0.55 0.22 280 / 0.45)",
-    hoverGlow: "0 0 52px color-mix(in oklab, var(--cyber-cyan) 65%, transparent), 0 0 110px oklch(0.55 0.22 280 / 0.7)",
+    hoverGlow:
+      "0 0 52px color-mix(in oklab, var(--cyber-cyan) 65%, transparent), 0 0 110px oklch(0.55 0.22 280 / 0.7)",
     border: "",
   },
 } as const;
@@ -113,7 +117,7 @@ export function Pricing() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-6 items-center py-6 md:py-10">
           {tiers.map((t) => {
             const s = styles[t.variant];
             const isHybrid = t.variant === "hybrid";
@@ -121,22 +125,16 @@ export function Pricing() {
               <div
                 key={t.name}
                 className={[
-                  "group relative rounded-2xl p-7 md:p-8 flex flex-col overflow-hidden",
-                  "backdrop-blur-xl transition-all duration-300 ease-out",
-                  "hover:-translate-y-2",
-                  isHybrid ? "md:scale-110 md:z-10" : "",
+                  "group relative rounded-2xl p-6 md:p-8 flex flex-col overflow-visible",
+                  "backdrop-blur-xl transition-all duration-300 ease-out tilt-3d",
+                  isHybrid ? "is-hybrid md:scale-[1.15] md:z-10 animate-hybrid-halo" : "hover:-translate-y-2",
                 ].join(" ")}
                 style={
                   isHybrid
                     ? {
                         background:
-                          "linear-gradient(160deg, color-mix(in oklab, var(--card) 70%, transparent), color-mix(in oklab, var(--card) 45%, transparent))",
-                        border: "1.5px solid transparent",
-                        backgroundImage:
-                          "linear-gradient(color-mix(in oklab, var(--card) 80%, transparent), color-mix(in oklab, var(--card) 55%, transparent)), linear-gradient(135deg, var(--cyber-cyan), oklch(0.6 0.22 280), var(--cyber-cyan))",
-                        backgroundOrigin: "border-box",
-                        backgroundClip: "padding-box, border-box",
-                        boxShadow: s.glow,
+                          "linear-gradient(160deg, color-mix(in oklab, var(--card) 75%, transparent), color-mix(in oklab, var(--card) 50%, transparent))",
+                        backdropFilter: "blur(24px)",
                       }
                     : {
                         background:
@@ -146,34 +144,48 @@ export function Pricing() {
                       }
                 }
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = s.hoverGlow;
+                  if (!isHybrid) e.currentTarget.style.boxShadow = s.hoverGlow;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = s.glow;
+                  if (!isHybrid) e.currentTarget.style.boxShadow = s.glow;
                 }}
               >
+                {/* Hybrid: animated conic neon rim */}
+                {isHybrid && <div aria-hidden className="hybrid-conic-rim" />}
+
                 {/* Hybrid: animated grid background */}
                 {isHybrid && (
                   <div
                     aria-hidden
-                    className="absolute inset-0 hybrid-grid-bg opacity-60 pointer-events-none"
+                    className="absolute inset-0 hybrid-grid-bg opacity-60 pointer-events-none rounded-2xl overflow-hidden"
                   />
                 )}
                 {/* Inner radial glow */}
                 {isHybrid && (
                   <div
                     aria-hidden
-                    className="absolute inset-0 pointer-events-none"
+                    className="absolute inset-0 pointer-events-none rounded-2xl overflow-hidden"
                     style={{
                       background:
-                        "radial-gradient(ellipse at top, oklch(0.55 0.22 280 / 0.25), transparent 70%)",
+                        "radial-gradient(ellipse at top, oklch(0.55 0.22 280 / 0.28), transparent 70%)",
                     }}
                   />
                 )}
 
-                {/* Diagonal ribbon for Hybrid */}
+                {/* BEST VALUE diagonal ribbon */}
+                {isHybrid && <div className="ribbon-corner">BEST VALUE</div>}
+
+                {/* Floating Early Bird pulsing badge */}
                 {isHybrid && (
-                  <div className="ribbon-corner">MOST POPULAR</div>
+                  <div
+                    className="absolute -top-4 -left-3 md:-top-5 md:-left-4 z-20 px-3 py-1.5 rounded-lg text-white text-[11px] font-extrabold font-mono tracking-wider whitespace-nowrap animate-early-bird-float"
+                    style={{
+                      background: "linear-gradient(135deg, #FF3B30, #FF6A00)",
+                      border: "1px solid rgba(255, 200, 100, 0.7)",
+                    }}
+                  >
+                    FIRST 10: ৳1,000 OFF
+                  </div>
                 )}
 
                 <div className="relative z-10 flex flex-col flex-1">
@@ -182,8 +194,7 @@ export function Pricing() {
                       className="self-start mb-4 inline-flex items-center gap-1 px-3 py-1 rounded-full text-white text-[10px] font-bold whitespace-nowrap font-mono tracking-wider animate-pulse"
                       style={{
                         background: "linear-gradient(135deg, #FF3B30, #FF6A00)",
-                        boxShadow:
-                          "0 0 12px rgba(255, 106, 0, 0.6), 0 0 24px rgba(255, 59, 48, 0.4)",
+                        boxShadow: "0 0 12px rgba(255, 106, 0, 0.6), 0 0 24px rgba(255, 59, 48, 0.4)",
                         border: "1px solid rgba(255, 180, 80, 0.6)",
                       }}
                     >
@@ -219,8 +230,7 @@ export function Pricing() {
                           className="text-4xl md:text-5xl font-extrabold font-mono tracking-tight"
                           style={{
                             color: "#FF6A00",
-                            textShadow:
-                              "0 0 18px rgba(255, 106, 0, 0.45)",
+                            textShadow: "0 0 18px rgba(255, 106, 0, 0.45)",
                           }}
                         >
                           ৳{t.earlyBirdPrice}
@@ -228,6 +238,19 @@ export function Pricing() {
                         <span className="text-xl font-mono text-muted-foreground line-through decoration-[#FF3B30]/70 decoration-2">
                           ৳{t.price}
                         </span>
+                      </>
+                    ) : t.priceNote ? (
+                      <>
+                        <span
+                          className="text-4xl md:text-5xl font-extrabold font-mono tracking-tight"
+                          style={{
+                            color: s.accent,
+                            textShadow: `0 0 18px color-mix(in oklab, ${s.accent} 45%, transparent)`,
+                          }}
+                        >
+                          ৳1,000
+                        </span>
+                        <span className="text-base font-mono text-muted-foreground">/ month</span>
                       </>
                     ) : (
                       <>
@@ -255,8 +278,8 @@ export function Pricing() {
                     </p>
                   )}
                   {t.priceNote && (
-                    <p className="mt-1 inline-flex items-center gap-1 font-mono text-sm font-bold text-[var(--cyber-amber)]">
-                      <Calendar className="h-3.5 w-3.5" /> {t.priceNote}
+                    <p className="mt-1 inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">
+                      <Calendar className="h-3.5 w-3.5" /> ৳{t.price} total · 6-month plan
                     </p>
                   )}
                   {t.location && (
@@ -287,7 +310,7 @@ export function Pricing() {
                     defaultBatch={t.batch}
                     trigger={
                       <Button
-                        className="mt-7 w-full h-12 font-bold gap-2 transition-all duration-300 hover:scale-[1.02]"
+                        className="mt-7 w-full h-14 md:h-12 text-base font-bold gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.97]"
                         style={{ background: s.btn, color: "black" }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.background = s.hoverBtn;
@@ -295,6 +318,12 @@ export function Pricing() {
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = s.btn;
+                          e.currentTarget.style.boxShadow = "none";
+                        }}
+                        onTouchStart={(e) => {
+                          e.currentTarget.style.boxShadow = s.hoverGlow;
+                        }}
+                        onTouchEnd={(e) => {
                           e.currentTarget.style.boxShadow = "none";
                         }}
                       >
