@@ -1,20 +1,11 @@
-## Problem
+## Plan
 
-The current logo file (`src/assets/binary-academy-logo.png`) is saved in RGB mode with no alpha channel — the "transparent" checkerboard you saw earlier was just the editor preview. On the actual site, the white pixels render as a solid white square behind the logo, which looks bad on the dark cyberpunk background.
+1. Replace the current site logo asset with the clean uploaded logo source, not the preview/screenshot version with checkerboard artifacts.
+2. Programmatically remove any remaining near-black/gray checkerboard or speckle pixels around the logo while preserving the green/cyan logo details.
+3. Save the cleaned result back to `src/assets/binary-academy-logo.png` so the existing Hero and Footer imports keep working.
+4. Verify the final PNG has a real alpha channel and transparent corner/background pixels before finishing.
 
-## Fix
+## Notes
 
-Programmatically convert the logo to true RGBA transparency:
-
-1. Open `src/assets/binary-academy-logo.png` with Pillow.
-2. Convert to RGBA.
-3. Remove the white/near-white background by setting alpha=0 for any pixel where R, G, B are all above a threshold (≈235), with a soft falloff on near-white pixels to avoid jagged edges around the binary digits and the "B" glow.
-4. Save back to the same path so all existing imports (Hero, Footer) pick it up automatically with no code changes.
-
-No component code needs to change — only the image asset is rewritten.
-
-## Technical details
-
-- Use a vectorized numpy mask: `alpha = 0` where `min(R,G,B) > 235`, scaled linearly between 200–235 for soft anti-aliased edges.
-- Preserve the green binary digits and cyan "B" untouched (they're well below the white threshold).
-- Output stays PNG at the same path; no import changes in `Hero.tsx` or `Footer.tsx`.
+- The black dots/checkerboard visible in the uploaded preview are transparency-artifact pixels, not a site styling issue.
+- I will avoid changing layout, text, links, database, or other branding elements.
