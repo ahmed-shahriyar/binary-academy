@@ -4,10 +4,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabaseExternal as supabase } from "@/integrations/supabase/external-client";
-import { Loader2, Rocket, Tag } from "lucide-react";
+import { Loader2, Rocket, Tag, ArrowLeft, ArrowRight, User, Phone, GraduationCap, Check, MapPin, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const BATCHES = ["Online Pro", "Offline FLEX", "Offline Hybrid"] as const;
 type Batch = (typeof BATCHES)[number];
@@ -29,9 +29,17 @@ interface Props {
   defaultBatch?: Batch;
 }
 
+const BATCH_INFO: Record<Batch, { price: string; tag: string; discount: boolean; subtitle: string }> = {
+  "Online Pro": { price: "৳2,449", tag: "Most Popular", discount: true, subtitle: "Live online classes + recordings" },
+  "Offline Hybrid": { price: "৳3,989", tag: "Best Value", discount: true, subtitle: "Offline + online combo (Mukterpara)" },
+  "Offline FLEX": { price: "৳6,000", tag: "৳1,000/mo", discount: false, subtitle: "Pay monthly, in-person at Netrokona" },
+};
+
 export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState<"next" | "back">("next");
   const [form, setForm] = useState({
     full_name: "",
     ssc_roll: "",
@@ -42,10 +50,13 @@ export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
   });
 
   useEffect(() => {
-    if (open) setForm((f) => ({ ...f, batch: defaultBatch }));
+    if (open) {
+      setForm((f) => ({ ...f, batch: defaultBatch }));
+      setStep(1);
+      setDirection("next");
+    }
   }, [open, defaultBatch]);
 
-  // Listen for global events from the urgency popup
   useEffect(() => {
     const onApplyDiscount = (e: Event) => {
       const code = (e as CustomEvent<{ code: string }>).detail?.code ?? "";
@@ -60,6 +71,24 @@ export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
     };
   }, []);
 
+  const goNext = () => {
+    if (step === 1) {
+      if (form.full_name.trim().length < 2) return toast.error("নাম কমপক্ষে ২ অক্ষরের হতে হবে");
+      if (form.ssc_roll.trim().length < 1) return toast.error("SSC Roll/Year প্রয়োজন");
+    }
+    if (step === 2) {
+      if (form.school_name.trim().length < 2) return toast.error("School name প্রয়োজন");
+      if (!/^[0-9+\-\s]{7,20}$/.test(form.mobile_number.trim())) return toast.error("সঠিক মোবাইল নম্বর দিন");
+    }
+    setDirection("next");
+    setStep((s) => Math.min(3, s + 1));
+  };
+
+  const goBack = () => {
+    setDirection("back");
+    setStep((s) => Math.max(1, s - 1));
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = leadSchema.safeParse(form);
@@ -68,10 +97,7 @@ export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
       return;
     }
     setLoading(true);
-    const payload = {
-      ...parsed.data,
-      discount_code: parsed.data.discount_code || null,
-    };
+    const payload = { ...parsed.data, discount_code: parsed.data.discount_code || null };
     const { error } = await supabase.from("leads").insert(payload);
     setLoading(false);
     if (error) {
@@ -80,115 +106,228 @@ export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
     }
     toast.success("🎉 Enrollment received! আমরা WhatsApp-এ যোগাযোগ করব।");
     setForm({ full_name: "", ssc_roll: "", school_name: "", mobile_number: "", batch: defaultBatch, discount_code: "" });
+    setStep(1);
     setOpen(false);
   };
+
+  const progress = (step / 3) * 100;
+  const slideClass = direction === "next" ? "animate-[wizard-slide-in-right_0.35s_ease-out]" : "animate-[wizard-slide-in-left_0.35s_ease-out]";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
-      <DialogContent className="bg-card border-glow-cyan max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-card border-glow-cyan max-w-md max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl text-gradient-cyber flex items-center gap-2">
             <Rocket className="h-5 w-5 text-[var(--cyber-cyan)]" /> Enroll — SSC '26 Batch
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            নিচের তথ্য পূরণ করো — seat confirm করতে আমরা WhatsApp-এ যোগাযোগ করব। Payment instructions popup-এর পর দেখানো হবে।
+          <DialogDescription className="text-muted-foreground text-xs">
+            Mukterpara, Netrokona — seat confirm করতে WhatsApp-এ যোগাযোগ করব।
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={submit} className="space-y-4 mt-2">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input
-              id="name"
-              required
-              value={form.full_name}
-              onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-              placeholder="তোমার পুরো নাম"
-              className="h-12 bg-input border-border focus:border-primary"
+
+        {/* Progress bar */}
+        <div className="mt-2 space-y-2">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <span className="text-[var(--cyber-cyan)]">STEP {step} OF 3</span>
+            <div className="flex gap-1.5">
+              {[1, 2, 3].map((n) => (
+                <div
+                  key={n}
+                  className={cn(
+                    "h-6 w-6 rounded-full border flex items-center justify-center text-[10px] font-bold transition-all",
+                    n < step && "bg-[var(--cyber-green)] border-[var(--cyber-green)] text-black",
+                    n === step && "border-[var(--cyber-cyan)] text-[var(--cyber-cyan)] shadow-[0_0_12px_var(--cyber-cyan)]",
+                    n > step && "border-border text-muted-foreground",
+                  )}
+                >
+                  {n < step ? <Check className="h-3 w-3" /> : n}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="h-1.5 w-full bg-input rounded-full overflow-hidden border border-border">
+            <div
+              className="h-full bg-gradient-to-r from-[var(--cyber-cyan)] to-[var(--cyber-green)] transition-all duration-500 ease-out"
+              style={{
+                width: `${progress}%`,
+                boxShadow: "0 0 12px var(--cyber-cyan), 0 0 24px var(--cyber-cyan)",
+              }}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="roll">SSC Roll / Year</Label>
-            <Input
-              id="roll"
-              type="tel"
-              inputMode="numeric"
-              required
-              value={form.ssc_roll}
-              onChange={(e) => setForm({ ...form, ssc_roll: e.target.value })}
-              placeholder="123456 / 2024"
-              className="h-12 bg-input border-border focus:border-primary"
-            />
+        </div>
+
+        <form onSubmit={submit} className="mt-4 overflow-hidden">
+          <div key={step} className={slideClass}>
+            {step === 1 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-xs font-mono text-[var(--cyber-cyan)] uppercase">
+                  <User className="h-3.5 w-3.5" /> Personal Info
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    autoFocus
+                    value={form.full_name}
+                    onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                    placeholder="তোমার পুরো নাম"
+                    className="h-12 bg-input border-border focus:border-primary"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="roll">SSC Roll / Year</Label>
+                  <Input
+                    id="roll"
+                    type="tel"
+                    inputMode="numeric"
+                    value={form.ssc_roll}
+                    onChange={(e) => setForm({ ...form, ssc_roll: e.target.value })}
+                    placeholder="123456 / 2026"
+                    className="h-12 bg-input border-border focus:border-primary"
+                  />
+                </div>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-xs font-mono text-[var(--cyber-cyan)] uppercase">
+                  <GraduationCap className="h-3.5 w-3.5" /> Contact Info
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="school">School / College</Label>
+                  <Input
+                    id="school"
+                    autoFocus
+                    value={form.school_name}
+                    onChange={(e) => setForm({ ...form, school_name: e.target.value })}
+                    placeholder="তোমার school বা college"
+                    className="h-12 bg-input border-border focus:border-primary"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="mobile" className="flex items-center gap-1.5">
+                    <Phone className="h-3.5 w-3.5" /> Mobile Number
+                  </Label>
+                  <Input
+                    id="mobile"
+                    type="tel"
+                    inputMode="tel"
+                    value={form.mobile_number}
+                    onChange={(e) => setForm({ ...form, mobile_number: e.target.value })}
+                    placeholder="01XXXXXXXXX"
+                    className="h-12 bg-input border-border focus:border-primary"
+                  />
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="text-[var(--cyber-cyan)] uppercase flex items-center gap-2">
+                    <Zap className="h-3.5 w-3.5" /> Select Your Batch
+                  </span>
+                  <span className="text-[var(--cyber-amber)] flex items-center gap-1">
+                    <MapPin className="h-3 w-3" /> Mukterpara, Netrokona
+                  </span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {BATCHES.map((b) => {
+                    const info = BATCH_INFO[b];
+                    const selected = form.batch === b;
+                    return (
+                      <button
+                        type="button"
+                        key={b}
+                        onClick={() => setForm({ ...form, batch: b })}
+                        className={cn(
+                          "w-full text-left p-3 rounded-lg border-2 transition-all relative overflow-hidden",
+                          selected
+                            ? "border-[var(--cyber-cyan)] bg-[var(--cyber-cyan)]/5 shadow-[0_0_16px_var(--cyber-cyan)]"
+                            : "border-border bg-input hover:border-[var(--cyber-cyan)]/50",
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm">{b}</span>
+                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--cyber-amber)]/20 text-[var(--cyber-amber)]">
+                                {info.tag}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">{info.subtitle}</p>
+                            {info.discount && (
+                              <p className="text-[11px] font-mono text-[var(--cyber-green)] mt-1 flex items-center gap-1">
+                                <Tag className="h-3 w-3" /> ৳1,000 OFF — first 10 students
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <div className="text-[var(--cyber-cyan)] font-bold font-mono">{info.price}</div>
+                            {selected && <Check className="h-4 w-4 text-[var(--cyber-green)] ml-auto mt-1" />}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="space-y-2 pt-1">
+                  <Label htmlFor="discount" className="flex items-center gap-1.5 text-xs">
+                    <Tag className="h-3 w-3 text-[var(--cyber-amber)]" />
+                    Discount Code <span className="text-muted-foreground font-normal">(optional)</span>
+                  </Label>
+                  <Input
+                    id="discount"
+                    value={form.discount_code}
+                    onChange={(e) => setForm({ ...form, discount_code: e.target.value.toUpperCase() })}
+                    placeholder="e.g. BINARY1000"
+                    className={cn(
+                      "h-10 bg-input border-border focus:border-primary font-mono tracking-wider text-sm",
+                      form.discount_code === "BINARY1000" && "border-[var(--cyber-amber)] text-[var(--cyber-amber)]",
+                    )}
+                  />
+                  {form.discount_code === "BINARY1000" && (
+                    <p className="text-xs text-[var(--cyber-amber)] font-mono">✓ ৳1,000 OFF applied</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="school">School / College</Label>
-            <Input
-              id="school"
-              required
-              value={form.school_name}
-              onChange={(e) => setForm({ ...form, school_name: e.target.value })}
-              placeholder="তোমার school বা college-এর নাম"
-              className="h-12 bg-input border-border focus:border-primary"
-            />
+
+          {/* Navigation */}
+          <div className="flex gap-2 mt-6">
+            {step > 1 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={goBack}
+                className="h-12 flex-1 border-[var(--cyber-cyan)]/40 hover:border-[var(--cyber-cyan)] hover:bg-[var(--cyber-cyan)]/10"
+              >
+                <ArrowLeft className="mr-1 h-4 w-4" /> Back
+              </Button>
+            )}
+            {step < 3 ? (
+              <Button
+                type="button"
+                onClick={goNext}
+                className="h-12 flex-1 bg-gradient-to-r from-[var(--cyber-cyan)] to-[var(--cyber-green)] text-black font-bold hover:opacity-90"
+              >
+                Next <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                disabled={loading}
+                className="h-12 flex-1 bg-gradient-to-r from-[var(--cyber-cyan)] to-[var(--cyber-green)] text-black font-bold hover:opacity-90 animate-pulse-glow"
+              >
+                {loading ? <Loader2 className="animate-spin" /> : <><Rocket className="mr-2 h-4 w-4" /> Confirm Enrollment</>}
+              </Button>
+            )}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="mobile">Mobile Number</Label>
-            <Input
-              id="mobile"
-              type="tel"
-              inputMode="tel"
-              required
-              value={form.mobile_number}
-              onChange={(e) => setForm({ ...form, mobile_number: e.target.value })}
-              placeholder="01XXXXXXXXX"
-              className="h-12 bg-input border-border focus:border-primary"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="batch">Batch</Label>
-            <Select
-              value={form.batch}
-              onValueChange={(v) => setForm({ ...form, batch: v as Batch })}
-            >
-              <SelectTrigger id="batch" className="h-12 bg-input border-border">
-                <SelectValue placeholder="Select a batch" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Online Pro">Online Pro — ৳2,449</SelectItem>
-                <SelectItem value="Offline Hybrid">Offline Hybrid — ৳3,989 (Best Value)</SelectItem>
-                <SelectItem value="Offline FLEX">Offline FLEX — ৳6,000 (৳1,000/mo)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="discount" className="flex items-center gap-1.5">
-              <Tag className="h-3.5 w-3.5 text-[var(--cyber-amber)]" />
-              Discount Code <span className="text-xs text-muted-foreground font-normal">(optional)</span>
-            </Label>
-            <Input
-              id="discount"
-              value={form.discount_code}
-              onChange={(e) => setForm({ ...form, discount_code: e.target.value.toUpperCase() })}
-              placeholder="e.g. BINARY1000"
-              className={`h-12 bg-input border-border focus:border-primary font-mono tracking-wider ${
-                form.discount_code === "BINARY1000"
-                  ? "border-[var(--cyber-amber)] text-[var(--cyber-amber)]"
-                  : ""
-              }`}
-            />
-            {form.discount_code === "BINARY1000" ? (
-              <p className="text-xs text-[var(--cyber-amber)] font-mono">
-                ✓ ৳1,000 OFF applied — verified at checkout
-              </p>
-            ) : null}
-          </div>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full h-12 bg-gradient-to-r from-[var(--cyber-cyan)] to-[var(--cyber-green)] text-black font-bold hover:opacity-90 animate-pulse-glow"
-          >
-            {loading ? <Loader2 className="animate-spin" /> : <><Rocket className="mr-2 h-4 w-4" /> Confirm Enrollment</>}
-          </Button>
         </form>
       </DialogContent>
     </Dialog>
