@@ -119,7 +119,7 @@ export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
       return;
     }
     toast.success("🎉 Enrollment received! আমরা WhatsApp-এ যোগাযোগ করব।");
-    setForm({ full_name: "", ssc_roll: "", school_name: "", mobile_number: "", batch: defaultBatch, discount_code: "" });
+    setForm({ full_name: "", ssc_roll: "", school_name: "", mobile_number: "", batch: "", discount_code: "" });
     setStep(1);
     setOpen(false);
   };
