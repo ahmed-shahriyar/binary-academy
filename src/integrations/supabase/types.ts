@@ -17,6 +17,7 @@ export type Database = {
       enrollments: {
         Row: {
           batch: string | null
+          course: string | null
           created_at: string
           id: string
           mobile: string
@@ -29,6 +30,7 @@ export type Database = {
         }
         Insert: {
           batch?: string | null
+          course?: string | null
           created_at?: string
           id?: string
           mobile: string
@@ -41,6 +43,7 @@ export type Database = {
         }
         Update: {
           batch?: string | null
+          course?: string | null
           created_at?: string
           id?: string
           mobile?: string
