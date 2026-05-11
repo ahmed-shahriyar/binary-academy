@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      enrollments: {
+        Row: {
+          batch: string | null
+          created_at: string
+          id: string
+          mobile: string
+          name: string
+          notes: string | null
+          school: string
+          ssc_roll: string
+          status: string
+          tier: string | null
+        }
+        Insert: {
+          batch?: string | null
+          created_at?: string
+          id?: string
+          mobile: string
+          name: string
+          notes?: string | null
+          school: string
+          ssc_roll: string
+          status?: string
+          tier?: string | null
+        }
+        Update: {
+          batch?: string | null
+          created_at?: string
+          id?: string
+          mobile?: string
+          name?: string
+          notes?: string | null
+          school?: string
+          ssc_roll?: string
+          status?: string
+          tier?: string | null
+        }
+        Relationships: []
+      }
       gift_claims: {
         Row: {
           created_at: string
