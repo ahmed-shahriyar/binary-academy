@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { supabaseExternal as supabase } from "@/integrations/supabase/external-client";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Rocket, Tag, ArrowLeft, ArrowRight, User, Phone, GraduationCap, Check, MapPin, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
