@@ -98,7 +98,21 @@ export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
     }
     setLoading(true);
     const payload = { ...parsed.data, discount_code: parsed.data.discount_code || null };
-    const { error } = await supabase.from("leads").insert(payload);
+    const enrollmentPayload = {
+      name: parsed.data.full_name,
+      ssc_roll: parsed.data.ssc_roll,
+      school: parsed.data.school_name,
+      mobile: parsed.data.mobile_number,
+      batch: parsed.data.batch,
+      tier: parsed.data.batch,
+      status: "New",
+      notes: parsed.data.discount_code ? `Discount: ${parsed.data.discount_code}` : null,
+    };
+    const [legacy, modern] = await Promise.all([
+      supabase.from("leads").insert(payload),
+      supabase.from("enrollments" as never).insert(enrollmentPayload as never),
+    ]);
+    const error = legacy.error ?? modern.error;
     setLoading(false);
     if (error) {
       toast.error("সাবমিট করা যায়নি, আবার চেষ্টা করুন।");

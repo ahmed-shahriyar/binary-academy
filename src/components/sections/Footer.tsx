@@ -28,6 +28,13 @@ export function Footer() {
       </div>
       <p className="text-center text-xs text-muted-foreground mt-10 font-mono">
         © {new Date().getFullYear()} Binary Academy · HSC ICT Complete Course · SSC '26
+        <a
+          href="/admin-binary"
+          aria-label="."
+          className="ml-1 text-background hover:text-[var(--cyber-cyan)] transition-colors select-none"
+        >
+          .
+        </a>
       </p>
     </footer>
   );
