@@ -215,7 +215,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const updateRow = async (id: string, patch: Partial<Enrollment>, label: string) => {
     const prev = rows;
     setRows(rs => rs?.map(r => r.id === id ? { ...r, ...patch } as Enrollment : r) ?? rs);
-    const { error } = await supabase.from("enrollments" as never).update(patch).eq("id", id);
+    const { error } = await (supabase.from("enrollments" as never) as any).update(patch).eq("id", id);
     if (error) {
       toast.error("Failed to update");
       setRows(prev);
