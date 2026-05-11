@@ -928,14 +928,14 @@ function AnalyticsTab({ rows, gifts }: { rows: Enrollment[] | null; gifts: GiftC
           <div></div>
           {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => <div key={i} className="text-center">{d}</div>)}
           {heatmap.cells.map((row, wi) => (
-            <>
-              <div key={`l${wi}`} className="text-right pr-1">W{wi + 1}</div>
+            <Fragment key={wi}>
+              <div className="text-right pr-1">W{wi + 1}</div>
               {row.map((v, di) => {
                 const intensity = v / heatmap.max;
                 const bg = v === 0 ? "rgba(255,255,255,0.04)" : `rgba(0,245,255,${0.15 + intensity * 0.7})`;
                 return <div key={di} title={`${v} signups`} className="aspect-square rounded" style={{ background: bg, boxShadow: v ? `0 0 8px rgba(0,245,255,${intensity * 0.6})` : "none" }} />;
               })}
-            </>
+            </Fragment>
           ))}
         </div>
       </ChartCard>
