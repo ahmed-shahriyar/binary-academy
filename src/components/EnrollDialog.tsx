@@ -45,13 +45,13 @@ export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
     ssc_roll: "",
     school_name: "",
     mobile_number: "",
-    batch: defaultBatch as Batch,
+    batch: "" as Batch | "",
     discount_code: "",
   });
 
   useEffect(() => {
     if (open) {
-      setForm((f) => ({ ...f, batch: defaultBatch }));
+      setForm((f) => ({ ...f, batch: "" }));
       setStep(1);
       setDirection("next");
     }
