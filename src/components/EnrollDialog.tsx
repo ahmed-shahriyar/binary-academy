@@ -344,6 +344,7 @@ export function EnrollDialog({ trigger }: Props) {
                 type="submit"
                 disabled={loading || !form.batch}
                 className="h-12 flex-1 bg-gradient-to-r from-[var(--cyber-cyan)] to-[var(--cyber-green)] text-black font-bold hover:opacity-90 animate-pulse-glow disabled:opacity-50 disabled:animate-none"
+                style={!form.batch ? { background: "var(--input)", color: "var(--muted-foreground)", border: "1px solid var(--border)" } : undefined}
               >
                 {loading ? <Loader2 className="animate-spin" /> : <><Rocket className="mr-2 h-4 w-4" /> {form.batch ? "Confirm Enrollment" : "Select a Batch"}</>}
               </Button>
