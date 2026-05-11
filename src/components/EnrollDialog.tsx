@@ -35,7 +35,7 @@ const BATCH_INFO: Record<Batch, { price: string; tag: string; discount: boolean;
   "Offline FLEX": { price: "৳6,000", tag: "৳1,000/mo", discount: false, subtitle: "Pay monthly, in-person at Netrokona" },
 };
 
-export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
+export function EnrollDialog({ trigger }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
@@ -55,7 +55,7 @@ export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
       setStep(1);
       setDirection("next");
     }
-  }, [open, defaultBatch]);
+  }, [open]);
 
   useEffect(() => {
     const onApplyDiscount = (e: Event) => {
@@ -248,6 +248,12 @@ export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
                   </span>
                 </div>
 
+                {!form.batch && (
+                  <p className="rounded-md border border-[var(--cyber-amber)]/35 bg-[var(--cyber-amber)]/10 px-3 py-2 text-xs font-mono text-[var(--cyber-amber)]">
+                    No batch selected yet — choose one below.
+                  </p>
+                )}
+
                 <div className="space-y-2.5">
                   {BATCHES.map((b) => {
                     const info = BATCH_INFO[b];
@@ -257,11 +263,12 @@ export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
                         type="button"
                         key={b}
                         onClick={() => setForm({ ...form, batch: b })}
+                        aria-pressed={selected}
                         className={cn(
-                          "w-full text-left p-3 rounded-lg border-2 transition-all relative overflow-hidden",
+                          "w-full text-left p-3 rounded-lg border-2 transition-all relative overflow-hidden focus:outline-none focus-visible:outline-none focus-visible:ring-0",
                           selected
                             ? "border-[var(--cyber-cyan)] bg-[var(--cyber-cyan)]/5 shadow-[0_0_16px_var(--cyber-cyan)]"
-                            : "border-border bg-input hover:border-[var(--cyber-cyan)]/50",
+                            : "border-border/60 bg-input/60 hover:border-[var(--cyber-cyan)]/50",
                         )}
                       >
                         <div className="flex items-start justify-between gap-2">
