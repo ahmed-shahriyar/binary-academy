@@ -20,7 +20,7 @@ const leadSchema = z.object({
     .string()
     .trim()
     .regex(/^[0-9+\-\s]{7,20}$/, "সঠিক মোবাইল নম্বর দিন"),
-  batch: z.enum(BATCHES),
+  batch: z.enum(BATCHES, { errorMap: () => ({ message: "একটি ব্যাচ নির্বাচন করুন" }) }),
   discount_code: z.string().trim().max(40).optional().or(z.literal("")),
 });
 
