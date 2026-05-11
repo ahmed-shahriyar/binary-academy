@@ -769,10 +769,11 @@ function ConvertModal({ claim, onClose, onDone }: { claim: GiftClaim; onClose: (
 }
 
 /* ───────── ANALYTICS TAB ───────── */
-function AnalyticsTab({ rows, gifts }: { rows: Enrollment[] | null; gifts: GiftClaim[] | null }) {
-  if (rows === null || gifts === null) {
-    return <div className="cmd-glass rounded-lg p-6 space-y-2">{[...Array(6)].map((_, i) => <div key={i} className="h-32 rounded cmd-skeleton" />)}</div>;
-  }
+function AnalyticsTab({ rows: rowsIn, gifts: giftsIn }: { rows: Enrollment[] | null; gifts: GiftClaim[] | null }) {
+  const loading = rowsIn === null || giftsIn === null;
+  const rows = rowsIn ?? [];
+  const gifts = giftsIn ?? [];
+
 
   // Chart 1: timeline last 30 days
   const timeline = useMemo(() => {
