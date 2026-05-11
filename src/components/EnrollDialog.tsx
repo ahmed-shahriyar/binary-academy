@@ -20,7 +20,7 @@ const leadSchema = z.object({
     .string()
     .trim()
     .regex(/^[0-9+\-\s]{7,20}$/, "সঠিক মোবাইল নম্বর দিন"),
-  batch: z.enum(BATCHES),
+  batch: z.enum(BATCHES, { errorMap: () => ({ message: "একটি ব্যাচ নির্বাচন করুন" }) }),
   discount_code: z.string().trim().max(40).optional().or(z.literal("")),
 });
 
@@ -45,13 +45,13 @@ export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
     ssc_roll: "",
     school_name: "",
     mobile_number: "",
-    batch: defaultBatch as Batch,
+    batch: "" as Batch | "",
     discount_code: "",
   });
 
   useEffect(() => {
     if (open) {
-      setForm((f) => ({ ...f, batch: defaultBatch }));
+      setForm((f) => ({ ...f, batch: "" }));
       setStep(1);
       setDirection("next");
     }
@@ -119,7 +119,7 @@ export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
       return;
     }
     toast.success("🎉 Enrollment received! আমরা WhatsApp-এ যোগাযোগ করব।");
-    setForm({ full_name: "", ssc_roll: "", school_name: "", mobile_number: "", batch: defaultBatch, discount_code: "" });
+    setForm({ full_name: "", ssc_roll: "", school_name: "", mobile_number: "", batch: "", discount_code: "" });
     setStep(1);
     setOpen(false);
   };
@@ -335,10 +335,10 @@ export function EnrollDialog({ trigger, defaultBatch = "Online Pro" }: Props) {
             ) : (
               <Button
                 type="submit"
-                disabled={loading}
-                className="h-12 flex-1 bg-gradient-to-r from-[var(--cyber-cyan)] to-[var(--cyber-green)] text-black font-bold hover:opacity-90 animate-pulse-glow"
+                disabled={loading || !form.batch}
+                className="h-12 flex-1 bg-gradient-to-r from-[var(--cyber-cyan)] to-[var(--cyber-green)] text-black font-bold hover:opacity-90 animate-pulse-glow disabled:opacity-50 disabled:animate-none"
               >
-                {loading ? <Loader2 className="animate-spin" /> : <><Rocket className="mr-2 h-4 w-4" /> Confirm Enrollment</>}
+                {loading ? <Loader2 className="animate-spin" /> : <><Rocket className="mr-2 h-4 w-4" /> {form.batch ? "Confirm Enrollment" : "Select a Batch"}</>}
               </Button>
             )}
           </div>
