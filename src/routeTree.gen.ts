@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as ApiPublicNotifyTelegramRouteImport } from './routes/api/public/notify-telegram'
 
 const AdminBinaryRoute = AdminBinaryRouteImport.update({
   id: '/admin-binary',
@@ -40,6 +41,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiPublicNotifyTelegramRoute = ApiPublicNotifyTelegramRouteImport.update({
+  id: '/api/public/notify-telegram',
+  path: '/api/public/notify-telegram',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,12 +53,14 @@ export interface FileRoutesByFullPath {
   '/admin-binary': typeof AdminBinaryRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/notify-telegram': typeof ApiPublicNotifyTelegramRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin-binary': typeof AdminBinaryRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin': typeof AdminIndexRoute
+  '/api/public/notify-telegram': typeof ApiPublicNotifyTelegramRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,19 +69,39 @@ export interface FileRoutesById {
   '/admin-binary': typeof AdminBinaryRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/notify-telegram': typeof ApiPublicNotifyTelegramRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/admin-binary' | '/admin/login' | '/admin/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/admin-binary'
+    | '/admin/login'
+    | '/admin/'
+    | '/api/public/notify-telegram'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin-binary' | '/admin/login' | '/admin'
-  id: '__root__' | '/' | '/admin' | '/admin-binary' | '/admin/login' | '/admin/'
+  to:
+    | '/'
+    | '/admin-binary'
+    | '/admin/login'
+    | '/admin'
+    | '/api/public/notify-telegram'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/admin-binary'
+    | '/admin/login'
+    | '/admin/'
+    | '/api/public/notify-telegram'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AdminBinaryRoute: typeof AdminBinaryRoute
+  ApiPublicNotifyTelegramRoute: typeof ApiPublicNotifyTelegramRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -113,6 +141,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/public/notify-telegram': {
+      id: '/api/public/notify-telegram'
+      path: '/api/public/notify-telegram'
+      fullPath: '/api/public/notify-telegram'
+      preLoaderRoute: typeof ApiPublicNotifyTelegramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -132,7 +167,17 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AdminBinaryRoute: AdminBinaryRoute,
+  ApiPublicNotifyTelegramRoute: ApiPublicNotifyTelegramRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
