@@ -859,7 +859,9 @@ function AnalyticsTab({ rows: rowsIn, gifts: giftsIn }: { rows: Enrollment[] | n
     ];
   }, [rows]);
 
-  const empty = rows.length === 0;
+  const empty = !loading && rows.length === 0;
+  if (loading) return <div className="cmd-glass rounded-lg p-6 space-y-2">{[...Array(6)].map((_, i) => <div key={i} className="h-32 rounded cmd-skeleton" />)}</div>;
+
   const grid = "rgba(0,245,255,0.15)";
   const tickStyle = { fill: "#00F5FF", fontSize: 10, fontFamily: "JetBrains Mono, monospace" } as const;
 
