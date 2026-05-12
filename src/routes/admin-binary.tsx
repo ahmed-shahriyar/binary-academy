@@ -514,16 +514,20 @@ function EnrollmentsTab({
               </table>
             </div>
             <div className="md:hidden divide-y divide-[#00F5FF]/10">
-              {filtered.map(({ r, course }) => {
+              {filtered.map(({ r, course, partial }) => {
                 const open = expanded === r.id;
                 return (
                   <div key={r.id} className={`p-3 ${
+                    partial ? "row-warn-amber" :
                     r.status === "Paid" ? "row-paid" : r.status === "Confirmed" ? "row-confirmed" : r.status === "In Touch" ? "row-intouch" : ""
                   }`}>
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="font-bold text-[#E8FBFF] truncate">{r.name}</p>
-                        <p className="text-[10px] text-[#00F5FF]/70 mt-0.5">{course || r.tier || r.batch || "—"}</p>
+                        <p className="font-bold text-[#E8FBFF] truncate">
+                          {r.name}
+                          {partial && <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FFB700]/20 text-[#FFB700] border border-[#FFB700]/50">🎁 PARTIAL</span>}
+                        </p>
+                        <p className="text-[10px] text-[#00F5FF]/70 mt-0.5">{course || r.tier || r.batch || (partial ? "Gift Claim Only · Follow up" : "—")}</p>
                       </div>
                       <button onClick={() => setExpanded(open ? null : r.id)} className="p-1 text-[#00F5FF]">
                         {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
