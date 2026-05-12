@@ -613,7 +613,7 @@ function EnrollmentsTab({
 }
 
 /* ───────── GIFT CLAIMS TAB ───────── */
-function GiftClaimsTab({ gifts, rows, reload }: { gifts: GiftClaim[] | null; rows: Enrollment[] | null; reload: () => void }) {
+function GiftClaimsTab({ gifts, rows, reload, deleteGift }: { gifts: GiftClaim[] | null; rows: Enrollment[] | null; reload: () => void; deleteGift: (id: string, name: string) => void }) {
   const [convertTarget, setConvertTarget] = useState<GiftClaim | null>(null);
 
   const enrollMap = useMemo(() => {
