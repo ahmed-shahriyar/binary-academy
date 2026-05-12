@@ -590,8 +590,6 @@ function EnrollmentsTab({
                         </button>
                       </div>
                     )}
-                      </div>
-                    )}
                   </div>
                 );
               })}
