@@ -7,7 +7,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 const EXTERNAL_SUPABASE_URL = "https://glylnfmhszlvaiqimxix.supabase.co";
-const EXTERNAL_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdseWxuZm1oc3psdmFpcWlteGl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2ODIwMjcsImV4cCI6MjA5MzI1ODAyN30.csbi-Wx--6WonPjnhMPx0M6Ea4mL3JJXrj_NWiZn3w8";
+const EXTERNAL_SUPABASE_ANON_KEY = "sb_publishable_jcoNiERx2jsD6dN_fu8yYQ_14RifH17";
 
 export const supabaseExternal = createClient(
   EXTERNAL_SUPABASE_URL,

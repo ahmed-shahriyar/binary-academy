@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabaseExternal as supabase } from "@/integrations/supabase/external-client";
+import { supabase } from "@/integrations/supabase/client";
 
 type State = {
   loading: boolean;

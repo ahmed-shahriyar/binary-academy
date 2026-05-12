@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import { supabaseExternal as supabase } from "@/integrations/supabase/external-client";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Power, Search, Download, Phone, MessageCircle, Lock, Terminal,

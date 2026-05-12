@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Gift, FileText, PlayCircle, Loader2, Phone } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { supabaseExternal } from "@/integrations/supabase/external-client";
+import { supabase } from "@/integrations/supabase/client";
 import { GiftSentDialog } from "@/components/GiftSentDialog";
 import { setLead } from "@/lib/leadStore";
 
