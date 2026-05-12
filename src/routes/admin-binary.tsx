@@ -269,6 +269,24 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     else toast.success(label);
   };
 
+  const deleteRow = async (id: string, name: string) => {
+    if (!confirm(`Delete enrollment for ${name}? This cannot be undone.`)) return;
+    const prev = rows;
+    setRows(rs => rs?.filter(r => r.id !== id) ?? rs);
+    const { error } = await (supabase.from("enrollments" as never) as any).delete().eq("id", id);
+    if (error) { toast.error("Failed to delete"); setRows(prev); }
+    else toast.success("🗑️ Enrollment deleted");
+  };
+
+  const deleteGift = async (id: string, name: string) => {
+    if (!confirm(`Delete gift claim for ${name}? This cannot be undone.`)) return;
+    const prev = gifts;
+    setGifts(gs => gs?.filter(g => g.id !== id) ?? gs);
+    const { error } = await (supabase.from("gift_claims" as never) as any).delete().eq("id", id);
+    if (error) { toast.error("Failed to delete"); setGifts(prev); }
+    else toast.success("🗑️ Gift claim deleted");
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-6">
       {/* Header */}
