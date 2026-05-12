@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Rocket, Tag, ArrowLeft, ArrowRight, User, Phone, GraduationCap, Check, MapPin, Zap, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getLead, setLead, clearLead, LEAD_EVENT, type Lead } from "@/lib/leadStore";
+import { getLead, setLead, clearLead, type Lead } from "@/lib/leadStore";
 
 const BATCHES = ["Online Pro", "Offline FLEX", "Offline Hybrid"] as const;
 type Batch = (typeof BATCHES)[number];
@@ -72,19 +72,16 @@ export function EnrollDialog({ trigger }: Props) {
       const code = (e as CustomEvent<{ code: string }>).detail?.code ?? "";
       setForm((f) => ({ ...f, discount_code: code }));
     };
+    // Only the trigger-less "global" instance responds to the open-enroll event,
+    // so we don't accidentally open every mounted EnrollDialog at once.
     const onOpen = () => setOpen(true);
-    const onLead = () => {
-      // If the lead store updates while dialog is closed, nothing to do — open() will re-hydrate.
-    };
     window.addEventListener("binary:apply-discount", onApplyDiscount);
-    window.addEventListener("binary:open-enroll", onOpen);
-    window.addEventListener(LEAD_EVENT, onLead);
+    if (!trigger) window.addEventListener("binary:open-enroll", onOpen);
     return () => {
       window.removeEventListener("binary:apply-discount", onApplyDiscount);
-      window.removeEventListener("binary:open-enroll", onOpen);
-      window.removeEventListener(LEAD_EVENT, onLead);
+      if (!trigger) window.removeEventListener("binary:open-enroll", onOpen);
     };
-  }, []);
+  }, [trigger]);
 
   const goNext = () => {
     if (step === 1) {
