@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Rocket, Tag, ArrowLeft, ArrowRight, User, Phone, GraduationCap, Check, MapPin, Zap } from "lucide-react";
+import { Loader2, Rocket, Tag, ArrowLeft, ArrowRight, User, Phone, GraduationCap, Check, MapPin, Zap, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getLead, setLead, clearLead, LEAD_EVENT, type Lead } from "@/lib/leadStore";
 
 const BATCHES = ["Online Pro", "Offline FLEX", "Offline Hybrid"] as const;
 type Batch = (typeof BATCHES)[number];
@@ -40,21 +41,30 @@ export function EnrollDialog({ trigger }: Props) {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState<"next" | "back">("next");
+  const [returningLead, setReturningLead] = useState<Lead | null>(null);
   const [form, setForm] = useState({
     full_name: "",
+    mobile_number: "",
     ssc_roll: "",
     school_name: "",
-    mobile_number: "",
     batch: "" as Batch | "",
     discount_code: "",
   });
 
+  // Hydrate from lead store every time the dialog opens
   useEffect(() => {
-    if (open) {
-      setForm((f) => ({ ...f, batch: "" }));
-      setStep(1);
-      setDirection("next");
-    }
+    if (!open) return;
+    const lead = getLead();
+    setReturningLead(lead);
+    setForm((f) => ({
+      ...f,
+      full_name: lead?.full_name ?? "",
+      mobile_number: lead?.mobile_number ?? "",
+      batch: "",
+    }));
+    // Skip Step 1 if we already have name + mobile from the gift claim
+    setStep(lead?.full_name && lead?.mobile_number ? 2 : 1);
+    setDirection("next");
   }, [open]);
 
   useEffect(() => {
@@ -63,22 +73,27 @@ export function EnrollDialog({ trigger }: Props) {
       setForm((f) => ({ ...f, discount_code: code }));
     };
     const onOpen = () => setOpen(true);
+    const onLead = () => {
+      // If the lead store updates while dialog is closed, nothing to do — open() will re-hydrate.
+    };
     window.addEventListener("binary:apply-discount", onApplyDiscount);
     window.addEventListener("binary:open-enroll", onOpen);
+    window.addEventListener(LEAD_EVENT, onLead);
     return () => {
       window.removeEventListener("binary:apply-discount", onApplyDiscount);
       window.removeEventListener("binary:open-enroll", onOpen);
+      window.removeEventListener(LEAD_EVENT, onLead);
     };
   }, []);
 
   const goNext = () => {
     if (step === 1) {
       if (form.full_name.trim().length < 2) return toast.error("নাম কমপক্ষে ২ অক্ষরের হতে হবে");
-      if (form.ssc_roll.trim().length < 1) return toast.error("SSC Roll/Year প্রয়োজন");
+      if (!/^[0-9+\-\s]{7,20}$/.test(form.mobile_number.trim())) return toast.error("সঠিক মোবাইল নম্বর দিন");
     }
     if (step === 2) {
+      if (form.ssc_roll.trim().length < 1) return toast.error("SSC Roll/Year প্রয়োজন");
       if (form.school_name.trim().length < 2) return toast.error("School name প্রয়োজন");
-      if (!/^[0-9+\-\s]{7,20}$/.test(form.mobile_number.trim())) return toast.error("সঠিক মোবাইল নম্বর দিন");
     }
     setDirection("next");
     setStep((s) => Math.min(3, s + 1));
@@ -97,7 +112,7 @@ export function EnrollDialog({ trigger }: Props) {
       return;
     }
     setLoading(true);
-    const payload = { ...parsed.data, discount_code: parsed.data.discount_code || null };
+
     const enrollmentPayload = {
       name: parsed.data.full_name,
       ssc_roll: parsed.data.ssc_roll,
@@ -108,24 +123,46 @@ export function EnrollDialog({ trigger }: Props) {
       status: "New",
       notes: parsed.data.discount_code ? `Discount: ${parsed.data.discount_code}` : null,
     };
-    const [legacy, modern] = await Promise.all([
-      supabase.from("leads").insert(payload),
-      supabase.from("enrollments" as never).insert(enrollmentPayload as never),
-    ]);
-    const error = legacy.error ?? modern.error;
+
+    const legacyPayload = { ...parsed.data, discount_code: parsed.data.discount_code || null };
+
+    // Always log to legacy `leads` table (admin still references it)
+    const legacyPromise = supabase.from("leads").insert(legacyPayload);
+
+    // Upgrade existing partial enrollment if we have one, else insert fresh.
+    const enrollmentPromise = returningLead?.enrollmentId
+      ? (supabase.from("enrollments" as never) as any)
+          .update(enrollmentPayload)
+          .eq("id", returningLead.enrollmentId)
+      : (supabase.from("enrollments" as never) as any).insert(enrollmentPayload);
+
+    const [legacy, modern] = await Promise.all([legacyPromise, enrollmentPromise]);
+    const error = (legacy as any).error ?? (modern as any).error;
     setLoading(false);
     if (error) {
       toast.error("সাবমিট করা যায়নি, আবার চেষ্টা করুন।");
       return;
     }
     toast.success("🎉 Enrollment received! আমরা WhatsApp-এ যোগাযোগ করব।");
-    setForm({ full_name: "", ssc_roll: "", school_name: "", mobile_number: "", batch: "", discount_code: "" });
+    clearLead();
+    setReturningLead(null);
+    setForm({ full_name: "", mobile_number: "", ssc_roll: "", school_name: "", batch: "", discount_code: "" });
     setStep(1);
     setOpen(false);
   };
 
+  // Persist Name + Mobile back to the lead store as soon as Step 1 is filled,
+  // so even if the user closes the dialog after Step 1, the next open prefills.
+  useEffect(() => {
+    if (!open) return;
+    if (step >= 2 && form.full_name.trim().length >= 2 && /^[0-9+\-\s]{7,20}$/.test(form.mobile_number.trim())) {
+      setLead({ full_name: form.full_name, mobile_number: form.mobile_number });
+    }
+  }, [step, open, form.full_name, form.mobile_number]);
+
   const progress = (step / 3) * 100;
   const slideClass = direction === "next" ? "animate-[wizard-slide-in-right_0.35s_ease-out]" : "animate-[wizard-slide-in-left_0.35s_ease-out]";
+  const firstName = (returningLead?.full_name ?? form.full_name).trim().split(" ")[0];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -190,37 +227,6 @@ export function EnrollDialog({ trigger }: Props) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="roll">SSC Roll / Year</Label>
-                  <Input
-                    id="roll"
-                    type="tel"
-                    inputMode="numeric"
-                    value={form.ssc_roll}
-                    onChange={(e) => setForm({ ...form, ssc_roll: e.target.value })}
-                    placeholder="123456 / 2026"
-                    className="h-12 bg-input border-border focus:border-primary"
-                  />
-                </div>
-              </div>
-            )}
-
-            {step === 2 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-mono text-[var(--cyber-cyan)] uppercase">
-                  <GraduationCap className="h-3.5 w-3.5" /> Contact Info
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="school">School / College</Label>
-                  <Input
-                    id="school"
-                    autoFocus
-                    value={form.school_name}
-                    onChange={(e) => setForm({ ...form, school_name: e.target.value })}
-                    placeholder="তোমার school বা college"
-                    className="h-12 bg-input border-border focus:border-primary"
-                  />
-                </div>
-                <div className="space-y-2">
                   <Label htmlFor="mobile" className="flex items-center gap-1.5">
                     <Phone className="h-3.5 w-3.5" /> Mobile Number
                   </Label>
@@ -231,6 +237,47 @@ export function EnrollDialog({ trigger }: Props) {
                     value={form.mobile_number}
                     onChange={(e) => setForm({ ...form, mobile_number: e.target.value })}
                     placeholder="01XXXXXXXXX"
+                    className="h-12 bg-input border-border focus:border-primary"
+                  />
+                </div>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-4">
+                {returningLead?.full_name && (
+                  <div className="rounded-md border border-[var(--cyber-green)]/40 bg-[var(--cyber-green)]/10 px-3 py-2.5 text-xs">
+                    <p className="flex items-center gap-1.5 font-semibold text-[var(--cyber-green)]">
+                      <Sparkles className="h-3.5 w-3.5" /> Welcome back, {firstName}!
+                    </p>
+                    <p className="text-muted-foreground mt-0.5">
+                      Just a few more details to secure your SSC '26 spot.
+                    </p>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-xs font-mono text-[var(--cyber-cyan)] uppercase">
+                  <GraduationCap className="h-3.5 w-3.5" /> Academic Info
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="roll">SSC Roll / Year</Label>
+                  <Input
+                    id="roll"
+                    autoFocus
+                    type="tel"
+                    inputMode="numeric"
+                    value={form.ssc_roll}
+                    onChange={(e) => setForm({ ...form, ssc_roll: e.target.value })}
+                    placeholder="123456 / 2026"
+                    className="h-12 bg-input border-border focus:border-primary"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="school">School / College</Label>
+                  <Input
+                    id="school"
+                    value={form.school_name}
+                    onChange={(e) => setForm({ ...form, school_name: e.target.value })}
+                    placeholder="তোমার school বা college"
                     className="h-12 bg-input border-border focus:border-primary"
                   />
                 </div>

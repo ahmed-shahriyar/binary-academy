@@ -1,74 +1,90 @@
 ## Goal
-Send you an instant WhatsApp message whenever a new row is added to `enrollments` or `gift_claims`.
 
-## Heads-up about WhatsApp
-WhatsApp Business messaging requires Twilio + a WhatsApp sender. There are two paths:
+Merge the Gift Claim flow into the Enrollment flow so a single Name + Mobile entry becomes the start of an enrollment record, gets sent to the database immediately, and is upgraded (not duplicated) when the student finishes the rest.
 
-- **Twilio WhatsApp Sandbox** (free, instant) — you join a sandbox by texting a code to Twilio's shared number from your phone. Perfect for personal admin alerts. ✅ Recommended for now.
-- **Approved WhatsApp Business sender** (paid, takes days, requires Meta business verification). Skip unless you want messages to clients.
+## 1. Restructure Enrollment steps
 
-If WhatsApp setup feels heavy later, **Telegram Bot is a 2-minute free alternative** with the exact same alert UX — happy to switch.
+Reorder `EnrollDialog` so it matches the Gift form:
 
----
+- **Step 1** — Full Name + Mobile Number (was Name + SSC Roll)
+- **Step 2** — SSC Roll/Year + School (was School + Mobile)
+- **Step 3** — Batch + discount code (unchanged)
 
-## What you'll need to do (one-time, ~5 min)
-1. Create a free Twilio account → grab Account SID + Auth Token.
-2. Open Twilio Console → Messaging → Try WhatsApp → text the join code (e.g. `join <two-words>`) from your WhatsApp to **+1 415 523 8886**.
-3. Connect Twilio in Lovable when I prompt you.
-4. Tell me your WhatsApp number (with country code).
+This makes Step 1 byte-identical to the Claim Gift form, so we can skip it when those fields already exist.
 
----
+## 2. Unified "lead" state
 
-## Implementation
+Introduce a tiny shared store (`src/lib/leadStore.ts`) backed by `localStorage` under key `binary:lead`:
 
-### 1. Connect Twilio
-Use the Twilio connector so credentials are managed securely (no manual API keys). Adds `TWILIO_API_KEY` env var.
+```ts
+{ enrollmentId: string; full_name: string; mobile_number: string; createdAt: string }
+```
 
-### 2. Store admin recipient
-Add a small `notification_settings` table (or a single env secret `ADMIN_WHATSAPP_NUMBER`) so the number isn't hardcoded.
+Helpers: `getLead()`, `setLead(partial)`, `clearLead()`, plus a `binary:lead-updated` window event so open dialogs react.
 
-### 3. Public webhook endpoint
-Create `src/routes/api/public/notify-new-record.ts` (TanStack server route). It:
-- Verifies a shared `WEBHOOK_SECRET` header (so only Supabase can call it).
-- Accepts `{ table, record }` payload.
-- Formats a message like:
-  ```
-  🆕 New Enrollment
-  Name: Rahim
-  Mobile: 017xxxxxxxx
-  Course: Online Pro
-  Time: 11 May 2026, 22:45
-  ```
-- Sends via Twilio WhatsApp gateway to `whatsapp:+88017...`.
+## 3. GiftClaim → instant enrollment row
 
-### 4. Database triggers (real-time, no polling)
-Add a Postgres function + triggers on `enrollments` (AFTER INSERT) and `gift_claims` (AFTER INSERT) that use `pg_net` to POST the new row to the webhook with the secret header. This means alerts fire **the instant a row is inserted**, even if the dashboard is closed.
+In `src/components/sections/GiftClaim.tsx`:
 
-### 5. Admin dashboard toggle (optional small UI)
-Add a "Notifications" card on `/admin-binary` showing:
-- Connection status (✅ Twilio linked / ❌ Not configured)
-- Test button → sends "🔔 Test alert from Binary Admin" to your WhatsApp
-- Toggle on/off per table (stored in `notification_settings`)
+1. Keep inserting into `gift_claims` (so existing reports keep working).
+2. **Also** insert into `enrollments` with:
+   - `name`, `mobile` from form
+   - `ssc_roll = ''`, `school = ''` (allowed once we relax the validator — see §6)
+   - `status = 'Gift Claimed'`
+   - `notes = 'Source: Gift Claim'`
+3. Save the returned `enrollments.id` + name + mobile via `setLead(...)`.
+4. Replace the success dialog copy with: **"Gift Unlocked! Redirecting you to complete your profile…"** and auto-fire `binary:open-enroll` after ~1.2s (keep "Maybe later" as an opt-out).
 
----
+## 4. EnrollDialog auto-skip + upgrade
 
-## Technical details
-- **Stack:** Twilio connector via Lovable connector gateway (no SDK needed, OAuth/token refresh handled automatically).
-- **Secrets:** `TWILIO_API_KEY` (auto from connector), `WEBHOOK_SECRET` (random, generated), `ADMIN_WHATSAPP_NUMBER` (your number).
-- **Trigger SQL:**
-  ```
-  CREATE TRIGGER enrollments_notify
-    AFTER INSERT ON enrollments
-    FOR EACH ROW EXECUTE FUNCTION notify_admin();
-  ```
-- **Endpoint URL** for triggers: `https://binaryacademy.lovable.app/api/public/notify-new-record`
-- Sandbox limitation: Twilio Sandbox can only message numbers that have joined the sandbox (i.e. your own admin number). That's exactly the use case here.
+In `EnrollDialog`:
 
----
+- On open, read `getLead()`. If `full_name` and `mobile_number` are present:
+  - Pre-fill those fields.
+  - Jump straight to **Step 2**.
+  - Render a banner above Step 2: **"Welcome back, {Name}! Just a few more details to secure your SSC '26 spot."**
+- On final submit:
+  - If `lead.enrollmentId` exists → `UPDATE enrollments SET name, mobile, ssc_roll, school, batch, tier, course, notes, status='New' WHERE id = lead.enrollmentId`.
+  - Otherwise → existing INSERT path.
+  - After success, `clearLead()`.
+- Keep the legacy `leads` insert as-is (admin still uses it for the older flow).
 
-## Order of operations after you approve
-1. I'll prompt you to connect Twilio.
-2. Ask for your WhatsApp number + that you've joined the sandbox.
-3. Run the migration (triggers + settings table).
-4. Build the webhook + dashboard card.
-5. Hit the Test button together to confirm a real WhatsApp message arrives.
+## 5. Admin dashboard label
+
+In `src/routes/admin-binary.tsx`:
+
+- Treat `status === 'Gift Claimed'` (or status='New' with empty `ssc_roll`/`school`) as a new pseudo-bucket **"Partial – Gift Only"**.
+- Add it to the `STATUSES` filter chips, give it an amber row tint, and show a "Follow up" hint with a WhatsApp deep link.
+- In the "🎁 GIFT CLAIMERS" / conversion tile logic, count Partial rows toward gift claims so numbers stay consistent.
+
+## 6. Database changes (one migration)
+
+The current `validate_enrollment` trigger requires `ssc_roll` length ≥ 1 and only allows statuses `New|In Touch|Confirmed|Paid`. To support partial rows we need to:
+
+- Add `'Gift Claimed'` to allowed statuses.
+- Allow empty `ssc_roll`/`school` **only when** `status = 'Gift Claimed'`.
+- Add `mobile` uniqueness helper (non-unique index) to make the upgrade lookup fast — but **not** a UNIQUE constraint, since duplicates already exist in production.
+
+No table-shape changes; existing columns are reused.
+
+## 7. Telegram notification
+
+The existing `notify_new_record` trigger fires on every insert into `enrollments`, so gift-claim partials will already ping `@doanaBinary_bot`. Update the webhook formatter (`src/routes/api/public/notify-telegram.ts`) so a `status === 'Gift Claimed'` enrollment sends a distinct **"🎁 Gift Claimed (partial)"** message instead of "🎓 New Enrollment". Final upgrade isn't a new INSERT, so we'll add an `AFTER UPDATE` trigger that fires only when `status` transitions away from `Gift Claimed`, posting a **"✅ Enrollment Completed"** message.
+
+## Technical notes
+
+- All `localStorage` access is guarded by `typeof window !== 'undefined'` for SSR safety.
+- The lead record auto-expires after 7 days client-side to avoid stale prefills.
+- Validation: `ssc_roll` and `school` only become required at Step 2 submit; the new Step 1 schema validates Name + Mobile only.
+- No changes to `gift_claims` table or its RLS — it stays as the gift audit log.
+- The admin "Partial – Gift Only" filter relies on status, so once a record is upgraded it leaves the bucket automatically.
+
+## Files touched
+
+- `src/lib/leadStore.ts` — new
+- `src/components/sections/GiftClaim.tsx`
+- `src/components/GiftSentDialog.tsx`
+- `src/components/EnrollDialog.tsx`
+- `src/routes/admin-binary.tsx`
+- `src/routes/api/public/notify-telegram.ts`
+- one new migration for the `validate_enrollment` rewrite + completion trigger

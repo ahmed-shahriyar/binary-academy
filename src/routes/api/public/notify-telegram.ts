@@ -39,15 +39,32 @@ export const Route = createFileRoute('/api/public/notify-telegram')({
 
           let text = ''
           if (type === 'enrollments') {
+            if (record.status === 'Gift Claimed') {
+              text =
+                `🎁 *Gift Claimed (Partial)*\n\n` +
+                `*Name:* ${escapeMd(record.name)}\n` +
+                `*Mobile:* ${escapeMd(record.mobile)}\n` +
+                `_Awaiting Step 2 — follow up on WhatsApp if no completion soon._`
+            } else {
+              text =
+                `🎓 *New Enrollment*\n\n` +
+                `*Name:* ${escapeMd(record.name)}\n` +
+                `*Mobile:* ${escapeMd(record.mobile)}\n` +
+                `*School:* ${escapeMd(record.school)}\n` +
+                `*SSC Roll:* ${escapeMd(record.ssc_roll)}\n` +
+                `*Course:* ${escapeMd(record.course)}\n` +
+                `*Batch:* ${escapeMd(record.batch)}\n` +
+                `*Tier:* ${escapeMd(record.tier)}\n` +
+                `*Status:* ${escapeMd(record.status)}`
+            }
+          } else if (type === 'enrollment_completed') {
             text =
-              `🎓 *New Enrollment*\n\n` +
+              `✅ *Enrollment Completed* (was Gift Claim)\n\n` +
               `*Name:* ${escapeMd(record.name)}\n` +
               `*Mobile:* ${escapeMd(record.mobile)}\n` +
               `*School:* ${escapeMd(record.school)}\n` +
               `*SSC Roll:* ${escapeMd(record.ssc_roll)}\n` +
-              `*Course:* ${escapeMd(record.course)}\n` +
               `*Batch:* ${escapeMd(record.batch)}\n` +
-              `*Tier:* ${escapeMd(record.tier)}\n` +
               `*Status:* ${escapeMd(record.status)}`
           } else if (type === 'gift_claims') {
             text =

@@ -31,7 +31,7 @@ type Enrollment = {
   batch: string | null;
   tier: string | null;
   course: string | null;
-  status: "New" | "In Touch" | "Confirmed" | "Paid";
+  status: "New" | "In Touch" | "Confirmed" | "Paid" | "Gift Claimed";
   notes: string | null;
   created_at: string;
 };
@@ -56,7 +56,7 @@ const COURSE_COLOR: Record<CourseKey, string> = {
   "Flex": "#FFB700",
 };
 
-const STATUSES = ["New", "In Touch", "Confirmed", "Paid"] as const;
+const STATUSES = ["New", "In Touch", "Confirmed", "Paid", "Gift Claimed"] as const;
 const ADMIN_PW = (import.meta.env.VITE_ADMIN_PASSWORD as string) || "Binary2026";
 const SESSION_KEY = "binary_admin_ok";
 
@@ -334,7 +334,11 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
 }
 
 /* ───────── ENROLLMENTS TAB ───────── */
-type CourseFilter = "All" | CourseKey | "Gift Only";
+type CourseFilter = "All" | CourseKey | "Partial - Gift Only";
+
+function isPartialGiftOnly(r: Enrollment) {
+  return r.status === "Gift Claimed" || (!r.ssc_roll?.trim() && !r.school?.trim());
+}
 
 function EnrollmentsTab({
   rows, updateRow, enrolledMobiles, gifts,
@@ -357,7 +361,12 @@ function EnrollmentsTab({
 
   // base list with course inferred
   const decorated = useMemo(() =>
-    (rows ?? []).map(r => ({ r, course: inferCourse(r), isGiftClaimer: giftMobileSet.has(normalizeMobile(r.mobile)) })),
+    (rows ?? []).map(r => ({
+      r,
+      course: inferCourse(r),
+      isGiftClaimer: giftMobileSet.has(normalizeMobile(r.mobile)),
+      partial: isPartialGiftOnly(r),
+    })),
     [rows, giftMobileSet],
   );
 
@@ -374,18 +383,18 @@ function EnrollmentsTab({
   }, [decorated, q]);
 
   const counts = useMemo(() => {
-    const c: Record<CourseFilter, number> = { "All": afterSearch.length, "Online Pro": 0, "Hybrid": 0, "Flex": 0, "Gift Only": 0 };
-    afterSearch.forEach(({ r, course, isGiftClaimer }) => {
+    const c: Record<CourseFilter, number> = { "All": afterSearch.length, "Online Pro": 0, "Hybrid": 0, "Flex": 0, "Partial - Gift Only": 0 };
+    afterSearch.forEach(({ r, course, partial }) => {
       if (course) c[course]++;
-      if (!course || (isGiftClaimer && !course)) c["Gift Only"]++;
+      if (partial) c["Partial - Gift Only"]++;
     });
     return c;
   }, [afterSearch]);
 
   const filtered = useMemo(() => {
     let list = afterSearch;
-    if (courseFilter === "Gift Only") {
-      list = list.filter(({ course, isGiftClaimer }) => !course || (isGiftClaimer && !course));
+    if (courseFilter === "Partial - Gift Only") {
+      list = list.filter(({ partial }) => partial);
     } else if (courseFilter !== "All") {
       list = list.filter(({ course }) => course === courseFilter);
     }
@@ -422,7 +431,7 @@ function EnrollmentsTab({
         </div>
         {/* Course filter pills */}
         <div className="flex flex-wrap gap-2">
-          {(["All", "Online Pro", "Hybrid", "Flex", "Gift Only"] as CourseFilter[]).map(f => (
+          {(["All", "Online Pro", "Hybrid", "Flex", "Partial - Gift Only"] as CourseFilter[]).map(f => (
             <button key={f} onClick={() => setCourseFilter(f)}
               className={`px-3 py-1 rounded-full text-[11px] uppercase tracking-wider font-bold transition-all flex items-center gap-1.5 ${
                 courseFilter === f
@@ -464,13 +473,21 @@ function EnrollmentsTab({
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(({ r, course }) => (
+                  {filtered.map(({ r, course, partial }) => (
                     <tr key={r.id} className={`border-t border-[#00F5FF]/10 transition-colors ${
+                      partial ? "row-warn-amber" :
                       r.status === "Paid" ? "row-paid" : r.status === "Confirmed" ? "row-confirmed" : r.status === "In Touch" ? "row-intouch" : ""
                     }`}>
-                      <td className="px-3 py-2 font-bold text-[#E8FBFF]">{r.name}</td>
-                      <td className="px-3 py-2">{r.ssc_roll}</td>
-                      <td className="px-3 py-2">{r.school}</td>
+                      <td className="px-3 py-2 font-bold text-[#E8FBFF]">
+                        {r.name}
+                        {partial && (
+                          <span className="ml-2 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FFB700]/20 text-[#FFB700] border border-[#FFB700]/50 align-middle">
+                            🎁 PARTIAL
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2">{r.ssc_roll || <span className="text-[#FFB700]/70">—</span>}</td>
+                      <td className="px-3 py-2">{r.school || <span className="text-[#FFB700]/70">—</span>}</td>
                       <td className="px-3 py-2">{r.batch || "—"}</td>
                       <td className="px-3 py-2">
                         {course ? (
@@ -481,7 +498,7 @@ function EnrollmentsTab({
                         <div className="flex items-center gap-1">
                           <span className="font-mono">{r.mobile}</span>
                           <a href={`tel:${r.mobile}`} className="p-1 rounded hover:bg-[#00F5FF]/20 text-[#00F5FF]"><Phone className="h-3 w-3" /></a>
-                          <a href={waLink(r.mobile)} target="_blank" rel="noreferrer" className="p-1 rounded hover:bg-[#39FF14]/20 text-[#39FF14]"><MessageCircle className="h-3 w-3" /></a>
+                          <a href={waLink(r.mobile)} target="_blank" rel="noreferrer" className="p-1 rounded hover:bg-[#39FF14]/20 text-[#39FF14]" title={partial ? "Follow up — partial gift claim" : ""}><MessageCircle className="h-3 w-3" /></a>
                         </div>
                       </td>
                       <td className="px-3 py-2">
@@ -497,16 +514,20 @@ function EnrollmentsTab({
               </table>
             </div>
             <div className="md:hidden divide-y divide-[#00F5FF]/10">
-              {filtered.map(({ r, course }) => {
+              {filtered.map(({ r, course, partial }) => {
                 const open = expanded === r.id;
                 return (
                   <div key={r.id} className={`p-3 ${
+                    partial ? "row-warn-amber" :
                     r.status === "Paid" ? "row-paid" : r.status === "Confirmed" ? "row-confirmed" : r.status === "In Touch" ? "row-intouch" : ""
                   }`}>
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="font-bold text-[#E8FBFF] truncate">{r.name}</p>
-                        <p className="text-[10px] text-[#00F5FF]/70 mt-0.5">{course || r.tier || r.batch || "—"}</p>
+                        <p className="font-bold text-[#E8FBFF] truncate">
+                          {r.name}
+                          {partial && <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FFB700]/20 text-[#FFB700] border border-[#FFB700]/50">🎁 PARTIAL</span>}
+                        </p>
+                        <p className="text-[10px] text-[#00F5FF]/70 mt-0.5">{course || r.tier || r.batch || (partial ? "Gift Claim Only · Follow up" : "—")}</p>
                       </div>
                       <button onClick={() => setExpanded(open ? null : r.id)} className="p-1 text-[#00F5FF]">
                         {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}

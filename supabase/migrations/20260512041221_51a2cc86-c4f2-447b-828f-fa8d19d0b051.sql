@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.notify_enrollment_completed() FROM PUBLIC, anon, authenticated;
