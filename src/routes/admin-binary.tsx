@@ -431,7 +431,7 @@ function EnrollmentsTab({
         </div>
         {/* Course filter pills */}
         <div className="flex flex-wrap gap-2">
-          {(["All", "Online Pro", "Hybrid", "Flex", "Gift Only"] as CourseFilter[]).map(f => (
+          {(["All", "Online Pro", "Hybrid", "Flex", "Partial - Gift Only"] as CourseFilter[]).map(f => (
             <button key={f} onClick={() => setCourseFilter(f)}
               className={`px-3 py-1 rounded-full text-[11px] uppercase tracking-wider font-bold transition-all flex items-center gap-1.5 ${
                 courseFilter === f
