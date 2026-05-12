@@ -587,6 +587,9 @@ function EnrollmentsTab({
                         </div>
                         <button onClick={() => deleteRow(r.id, r.name)} className="w-full mt-2 flex items-center justify-center gap-2 px-3 py-2 rounded border border-[#FF3B3B]/50 text-[#FF3B3B] hover:bg-[#FF3B3B]/15 text-[10px] font-bold uppercase tracking-widest">
                           <Trash2 className="h-3.5 w-3.5" /> Delete
+                        </button>
+                      </div>
+                    )}
                       </div>
                     )}
                   </div>
