@@ -164,7 +164,15 @@ export function EnrollDialog({ trigger }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
-      <DialogContent className="bg-card border-glow-cyan max-w-md max-h-[92vh] overflow-y-auto">
+      <DialogContent
+        className="border-glow-cyan max-w-md max-h-[92vh] overflow-y-auto rounded-xl ring-1 ring-[var(--cyber-cyan)]/25 backdrop-blur-md"
+        style={{
+          background:
+            "radial-gradient(120% 60% at 50% 0%, color-mix(in oklab, var(--cyber-cyan) 10%, transparent) 0%, transparent 60%), linear-gradient(to bottom, color-mix(in oklab, var(--card) 96%, white 4%), var(--background))",
+          boxShadow:
+            "0 25px 60px -20px rgba(0,0,0,0.85), 0 0 40px -10px var(--cyber-cyan)",
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl text-gradient-cyber flex items-center gap-2">
             <Rocket className="h-5 w-5 text-[var(--cyber-cyan)]" /> Enroll — SSC '26 Batch
