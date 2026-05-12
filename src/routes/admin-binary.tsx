@@ -31,7 +31,7 @@ type Enrollment = {
   batch: string | null;
   tier: string | null;
   course: string | null;
-  status: "New" | "In Touch" | "Confirmed" | "Paid";
+  status: "New" | "In Touch" | "Confirmed" | "Paid" | "Gift Claimed";
   notes: string | null;
   created_at: string;
 };
@@ -56,7 +56,7 @@ const COURSE_COLOR: Record<CourseKey, string> = {
   "Flex": "#FFB700",
 };
 
-const STATUSES = ["New", "In Touch", "Confirmed", "Paid"] as const;
+const STATUSES = ["New", "In Touch", "Confirmed", "Paid", "Gift Claimed"] as const;
 const ADMIN_PW = (import.meta.env.VITE_ADMIN_PASSWORD as string) || "Binary2026";
 const SESSION_KEY = "binary_admin_ok";
 
