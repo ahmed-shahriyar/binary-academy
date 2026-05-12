@@ -338,10 +338,10 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
       <div className="mt-4 cmd-fadein">
         {tab === "enrollments" && (
-          <EnrollmentsTab rows={rows} updateRow={updateRow} enrolledMobiles={enrolledMobiles} gifts={gifts} />
+          <EnrollmentsTab rows={rows} updateRow={updateRow} deleteRow={deleteRow} enrolledMobiles={enrolledMobiles} gifts={gifts} />
         )}
         {tab === "gifts" && (
-          <GiftClaimsTab gifts={gifts} rows={rows} reload={load} />
+          <GiftClaimsTab gifts={gifts} rows={rows} reload={load} deleteGift={deleteGift} />
         )}
         {tab === "analytics" && (
           <AnalyticsTab rows={rows} gifts={gifts} />
