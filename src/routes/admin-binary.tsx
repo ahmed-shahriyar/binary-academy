@@ -690,8 +690,6 @@ function GiftClaimsTab({ gifts, rows, reload, deleteGift }: { gifts: GiftClaim[]
                           </button>
                         </div>
                       </td>
-                        </div>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
