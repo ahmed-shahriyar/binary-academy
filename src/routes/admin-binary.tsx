@@ -334,7 +334,11 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
 }
 
 /* ───────── ENROLLMENTS TAB ───────── */
-type CourseFilter = "All" | CourseKey | "Gift Only";
+type CourseFilter = "All" | CourseKey | "Partial - Gift Only";
+
+function isPartialGiftOnly(r: Enrollment) {
+  return r.status === "Gift Claimed" || (!r.ssc_roll?.trim() && !r.school?.trim());
+}
 
 function EnrollmentsTab({
   rows, updateRow, enrolledMobiles, gifts,
@@ -357,7 +361,12 @@ function EnrollmentsTab({
 
   // base list with course inferred
   const decorated = useMemo(() =>
-    (rows ?? []).map(r => ({ r, course: inferCourse(r), isGiftClaimer: giftMobileSet.has(normalizeMobile(r.mobile)) })),
+    (rows ?? []).map(r => ({
+      r,
+      course: inferCourse(r),
+      isGiftClaimer: giftMobileSet.has(normalizeMobile(r.mobile)),
+      partial: isPartialGiftOnly(r),
+    })),
     [rows, giftMobileSet],
   );
 
@@ -374,18 +383,18 @@ function EnrollmentsTab({
   }, [decorated, q]);
 
   const counts = useMemo(() => {
-    const c: Record<CourseFilter, number> = { "All": afterSearch.length, "Online Pro": 0, "Hybrid": 0, "Flex": 0, "Gift Only": 0 };
-    afterSearch.forEach(({ r, course, isGiftClaimer }) => {
+    const c: Record<CourseFilter, number> = { "All": afterSearch.length, "Online Pro": 0, "Hybrid": 0, "Flex": 0, "Partial - Gift Only": 0 };
+    afterSearch.forEach(({ r, course, partial }) => {
       if (course) c[course]++;
-      if (!course || (isGiftClaimer && !course)) c["Gift Only"]++;
+      if (partial) c["Partial - Gift Only"]++;
     });
     return c;
   }, [afterSearch]);
 
   const filtered = useMemo(() => {
     let list = afterSearch;
-    if (courseFilter === "Gift Only") {
-      list = list.filter(({ course, isGiftClaimer }) => !course || (isGiftClaimer && !course));
+    if (courseFilter === "Partial - Gift Only") {
+      list = list.filter(({ partial }) => partial);
     } else if (courseFilter !== "All") {
       list = list.filter(({ course }) => course === courseFilter);
     }
