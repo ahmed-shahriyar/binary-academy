@@ -70,5 +70,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      {/* Single global EnrollDialog driven by the `binary:open-enroll` event
+          (e.g. from the Gift Claim success flow). Trigger-based instances
+          inside Hero/Pricing/StickyCTA continue to open via their own buttons. */}
+      <EnrollDialog />
+    </>
+  );
 }
