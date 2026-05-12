@@ -473,13 +473,21 @@ function EnrollmentsTab({
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(({ r, course }) => (
+                  {filtered.map(({ r, course, partial }) => (
                     <tr key={r.id} className={`border-t border-[#00F5FF]/10 transition-colors ${
+                      partial ? "row-warn-amber" :
                       r.status === "Paid" ? "row-paid" : r.status === "Confirmed" ? "row-confirmed" : r.status === "In Touch" ? "row-intouch" : ""
                     }`}>
-                      <td className="px-3 py-2 font-bold text-[#E8FBFF]">{r.name}</td>
-                      <td className="px-3 py-2">{r.ssc_roll}</td>
-                      <td className="px-3 py-2">{r.school}</td>
+                      <td className="px-3 py-2 font-bold text-[#E8FBFF]">
+                        {r.name}
+                        {partial && (
+                          <span className="ml-2 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FFB700]/20 text-[#FFB700] border border-[#FFB700]/50 align-middle">
+                            🎁 PARTIAL
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2">{r.ssc_roll || <span className="text-[#FFB700]/70">—</span>}</td>
+                      <td className="px-3 py-2">{r.school || <span className="text-[#FFB700]/70">—</span>}</td>
                       <td className="px-3 py-2">{r.batch || "—"}</td>
                       <td className="px-3 py-2">
                         {course ? (
@@ -490,7 +498,7 @@ function EnrollmentsTab({
                         <div className="flex items-center gap-1">
                           <span className="font-mono">{r.mobile}</span>
                           <a href={`tel:${r.mobile}`} className="p-1 rounded hover:bg-[#00F5FF]/20 text-[#00F5FF]"><Phone className="h-3 w-3" /></a>
-                          <a href={waLink(r.mobile)} target="_blank" rel="noreferrer" className="p-1 rounded hover:bg-[#39FF14]/20 text-[#39FF14]"><MessageCircle className="h-3 w-3" /></a>
+                          <a href={waLink(r.mobile)} target="_blank" rel="noreferrer" className="p-1 rounded hover:bg-[#39FF14]/20 text-[#39FF14]" title={partial ? "Follow up — partial gift claim" : ""}><MessageCircle className="h-3 w-3" /></a>
                         </div>
                       </td>
                       <td className="px-3 py-2">
