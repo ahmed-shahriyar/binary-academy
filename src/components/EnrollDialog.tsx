@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Rocket, Tag, ArrowLeft, ArrowRight, User, Phone, GraduationCap, Check, MapPin, Zap, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getLead, setLead, clearLead, LEAD_EVENT, type Lead } from "@/lib/leadStore";
+import { getLead, setLead, clearLead, type Lead } from "@/lib/leadStore";
 
 const BATCHES = ["Online Pro", "Offline FLEX", "Offline Hybrid"] as const;
 type Batch = (typeof BATCHES)[number];
