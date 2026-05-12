@@ -3,10 +3,12 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Gift, FileText, PlayCircle, Loader2 } from "lucide-react";
+import { Gift, FileText, PlayCircle, Loader2, Phone } from "lucide-react";
 import { toast } from "sonner";
-import { supabaseExternal as supabase } from "@/integrations/supabase/external-client";
+import { supabaseExternal } from "@/integrations/supabase/external-client";
+import { supabase } from "@/integrations/supabase/client";
 import { GiftSentDialog } from "@/components/GiftSentDialog";
+import { setLead } from "@/lib/leadStore";
 
 const schema = z.object({
   full_name: z.string().trim().min(2, "নাম কমপক্ষে ২ অক্ষরের হতে হবে").max(100),
@@ -20,6 +22,7 @@ export function GiftClaim() {
   const [form, setForm] = useState({ full_name: "", whatsapp_number: "" });
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [savedName, setSavedName] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,12 +32,40 @@ export function GiftClaim() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.from("gift_claims").insert(parsed.data);
+
+    // 1. Audit log to gift_claims (legacy external project — keep for back-compat)
+    await supabaseExternal.from("gift_claims").insert(parsed.data);
+
+    // 2. Audit log to main gift_claims table (drives admin dashboard)
+    await supabase.from("gift_claims" as never).insert(parsed.data as never);
+
+    // 3. Create a partial enrollment row so the student is immediately in our pipeline
+    const { data: enrollRow, error: enrollErr } = await (supabase.from("enrollments" as never) as any)
+      .insert({
+        name: parsed.data.full_name,
+        mobile: parsed.data.whatsapp_number,
+        ssc_roll: "",
+        school: "",
+        status: "Gift Claimed",
+        notes: "Source: Gift Claim",
+      })
+      .select("id")
+      .single();
+
     setLoading(false);
-    if (error) {
+
+    if (enrollErr) {
       toast.error("সাবমিট করা যায়নি, আবার চেষ্টা করুন।");
       return;
     }
+
+    setLead({
+      enrollmentId: enrollRow?.id ?? null,
+      full_name: parsed.data.full_name,
+      mobile_number: parsed.data.whatsapp_number,
+    });
+
+    setSavedName(parsed.data.full_name);
     setForm({ full_name: "", whatsapp_number: "" });
     setShowSuccess(true);
   };
@@ -91,7 +122,9 @@ export function GiftClaim() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="gift-wa">WhatsApp Number</Label>
+              <Label htmlFor="gift-wa" className="flex items-center gap-1.5">
+                <Phone className="h-3.5 w-3.5" /> Mobile / WhatsApp Number
+              </Label>
               <Input
                 id="gift-wa"
                 type="tel"
@@ -113,19 +146,19 @@ export function GiftClaim() {
                 <Loader2 className="animate-spin" />
               ) : (
                 <>
-                  <Gift className="mr-2 h-5 w-5" /> Send My Gifts
+                  <Gift className="mr-2 h-5 w-5" /> Claim Gift & Continue →
                 </>
               )}
             </Button>
 
             <p className="text-center text-[10px] text-muted-foreground font-mono">
-              No spam · Gifts delivered to WhatsApp within 2 minutes
+              No spam · Same details auto-fill the enrollment form
             </p>
           </form>
         </div>
       </div>
 
-      <GiftSentDialog open={showSuccess} onOpenChange={setShowSuccess} />
+      <GiftSentDialog open={showSuccess} onOpenChange={setShowSuccess} name={savedName} />
     </section>
   );
 }

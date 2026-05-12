@@ -1,19 +1,37 @@
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Rocket } from "lucide-react";
+import { CheckCircle2, Rocket, Loader2 } from "lucide-react";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** When true, automatically open the enrollment dialog after a short delay. */
+  autoRedirect?: boolean;
+  /** First name to greet the student. */
+  name?: string;
 }
 
-export function GiftSentDialog({ open, onOpenChange }: Props) {
+export function GiftSentDialog({ open, onOpenChange, autoRedirect = true, name }: Props) {
+  const [countdown, setCountdown] = useState(3);
+
+  useEffect(() => {
+    if (!open || !autoRedirect) return;
+    setCountdown(3);
+    const tick = setInterval(() => setCountdown((c) => Math.max(0, c - 1)), 1000);
+    const t = setTimeout(() => {
+      onOpenChange(false);
+      setTimeout(() => window.dispatchEvent(new CustomEvent("binary:open-enroll")), 200);
+    }, 3000);
+    return () => {
+      clearInterval(tick);
+      clearTimeout(t);
+    };
+  }, [open, autoRedirect, onOpenChange]);
+
   const handleEnroll = () => {
     onOpenChange(false);
-    // Defer so this dialog closes cleanly before the next one opens
-    setTimeout(() => {
-      window.dispatchEvent(new CustomEvent("binary:open-enroll"));
-    }, 250);
+    setTimeout(() => window.dispatchEvent(new CustomEvent("binary:open-enroll")), 200);
   };
 
   return (
@@ -24,25 +42,25 @@ export function GiftSentDialog({ open, onOpenChange }: Props) {
             <CheckCircle2 className="h-9 w-9 text-[var(--cyber-green)]" />
           </div>
           <DialogTitle className="text-2xl text-center text-[var(--cyber-green)]">
-            🎁 Gifts Sent!
+            🎁 Gift Unlocked{name ? `, ${name.split(" ")[0]}!` : "!"}
           </DialogTitle>
           <DialogDescription className="text-center text-base text-muted-foreground pt-2">
-            Check your <span className="text-[var(--cyber-green)] font-semibold">WhatsApp</span> for the{" "}
-            <span className="text-foreground font-semibold">Logic Gates PDF</span> and your{" "}
-            <span className="text-foreground font-semibold">Free Demo Class</span> link.
+            Logic Gates PDF + Free Demo link → coming to your <span className="text-[var(--cyber-green)] font-semibold">WhatsApp</span> in 2 minutes.
+            <br />
+            <span className="block mt-2 text-foreground">
+              Redirecting you to complete your profile
+              {autoRedirect ? <> in <span className="font-mono text-[var(--cyber-cyan)]">{countdown}s</span>…</> : "…"}
+            </span>
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-4 rounded-lg border border-[var(--cyber-cyan)]/30 bg-[var(--cyber-cyan)]/5 p-4">
-          <p className="text-xs font-mono text-[var(--cyber-cyan)] uppercase tracking-wider text-center mb-3">
-            Next Step → Lock Your Seat
-          </p>
+        <div className="mt-2 rounded-lg border border-[var(--cyber-cyan)]/30 bg-[var(--cyber-cyan)]/5 p-4">
           <Button
             onClick={handleEnroll}
             className="w-full h-14 text-base font-bold bg-gradient-to-r from-[var(--cyber-cyan)] to-[var(--cyber-green)] text-black hover:opacity-90 animate-pulse-glow"
           >
-            <Rocket className="mr-2 h-5 w-5" />
-            Join the SSC '26 Batch Now
+            {autoRedirect ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Rocket className="mr-2 h-5 w-5" />}
+            Continue Now →
           </Button>
         </div>
 
