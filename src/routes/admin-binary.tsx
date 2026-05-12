@@ -218,7 +218,16 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   useEffect(() => {
     load();
     const id = setInterval(load, 30_000);
-    return () => clearInterval(id);
+    const channel = supabase
+      .channel("admin-binary-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "enrollments" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "gift_claims" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "leads" }, () => load())
+      .subscribe();
+    return () => {
+      clearInterval(id);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
