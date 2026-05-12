@@ -717,6 +717,9 @@ function GiftClaimsTab({ gifts, rows, reload, deleteGift }: { gifts: GiftClaim[]
                         <Target className="h-3 w-3" /> Convert
                       </button>
                     )}
+                    <button onClick={() => deleteGift(g.id, g.full_name)} className="ml-auto p-1.5 rounded text-[#FF3B3B] hover:bg-[#FF3B3B]/20" title="Delete gift claim">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 </div>
               ))}
