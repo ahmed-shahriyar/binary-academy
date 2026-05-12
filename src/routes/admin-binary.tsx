@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   Power, Search, Download, Phone, MessageCircle, Lock, Terminal,
   ChevronDown, ChevronUp, Hexagon, AlertTriangle, RefreshCw, Gift,
-  TrendingUp, BarChart3, Target, Zap, X,
+  TrendingUp, BarChart3, Target, Zap, X, Trash2,
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -269,6 +269,24 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     else toast.success(label);
   };
 
+  const deleteRow = async (id: string, name: string) => {
+    if (!confirm(`Delete enrollment for ${name}? This cannot be undone.`)) return;
+    const prev = rows;
+    setRows(rs => rs?.filter(r => r.id !== id) ?? rs);
+    const { error } = await (supabase.from("enrollments" as never) as any).delete().eq("id", id);
+    if (error) { toast.error("Failed to delete"); setRows(prev); }
+    else toast.success("🗑️ Enrollment deleted");
+  };
+
+  const deleteGift = async (id: string, name: string) => {
+    if (!confirm(`Delete gift claim for ${name}? This cannot be undone.`)) return;
+    const prev = gifts;
+    setGifts(gs => gs?.filter(g => g.id !== id) ?? gs);
+    const { error } = await (supabase.from("gift_claims" as never) as any).delete().eq("id", id);
+    if (error) { toast.error("Failed to delete"); setGifts(prev); }
+    else toast.success("🗑️ Gift claim deleted");
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-6">
       {/* Header */}
@@ -320,10 +338,10 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
       <div className="mt-4 cmd-fadein">
         {tab === "enrollments" && (
-          <EnrollmentsTab rows={rows} updateRow={updateRow} enrolledMobiles={enrolledMobiles} gifts={gifts} />
+          <EnrollmentsTab rows={rows} updateRow={updateRow} deleteRow={deleteRow} enrolledMobiles={enrolledMobiles} gifts={gifts} />
         )}
         {tab === "gifts" && (
-          <GiftClaimsTab gifts={gifts} rows={rows} reload={load} />
+          <GiftClaimsTab gifts={gifts} rows={rows} reload={load} deleteGift={deleteGift} />
         )}
         {tab === "analytics" && (
           <AnalyticsTab rows={rows} gifts={gifts} />
@@ -350,10 +368,11 @@ function isPartialGiftOnly(r: Enrollment) {
 }
 
 function EnrollmentsTab({
-  rows, updateRow, enrolledMobiles, gifts,
+  rows, updateRow, deleteRow, enrolledMobiles, gifts,
 }: {
   rows: Enrollment[] | null;
   updateRow: (id: string, patch: Partial<Enrollment>, label: string) => void;
+  deleteRow: (id: string, name: string) => void;
   enrolledMobiles: Set<string>;
   gifts: GiftClaim[] | null;
 }) {
@@ -476,7 +495,7 @@ function EnrollmentsTab({
               <table className="w-full text-xs">
                 <thead className="bg-[#00F5FF]/5 text-[#00F5FF] uppercase tracking-wider">
                   <tr>
-                    {["Name","SSC Roll","School","Batch","Course","Mobile","Status","Notes","Created"].map(h => (
+                    {["Name","SSC Roll","School","Batch","Course","Mobile","Status","Notes","Created","Actions"].map(h => (
                       <th key={h} className="text-left px-3 py-2 font-bold">{h}</th>
                     ))}
                   </tr>
@@ -517,6 +536,11 @@ function EnrollmentsTab({
                         <NotesField value={r.notes} onSave={(n) => updateRow(r.id, { notes: n }, "✅ Notes saved")} />
                       </td>
                       <td className="px-3 py-2 text-[10px] text-[#00F5FF]/70 whitespace-nowrap">{fmtDate(r.created_at)}</td>
+                      <td className="px-3 py-2">
+                        <button onClick={() => deleteRow(r.id, r.name)} className="p-1.5 rounded text-[#FF3B3B] hover:bg-[#FF3B3B]/20" title="Delete enrollment">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -561,6 +585,9 @@ function EnrollmentsTab({
                           <p className="text-[10px] uppercase text-[#00F5FF]/70 mb-1">Notes</p>
                           <NotesField value={r.notes} onSave={(n) => updateRow(r.id, { notes: n }, "✅ Notes saved")} />
                         </div>
+                        <button onClick={() => deleteRow(r.id, r.name)} className="w-full mt-2 flex items-center justify-center gap-2 px-3 py-2 rounded border border-[#FF3B3B]/50 text-[#FF3B3B] hover:bg-[#FF3B3B]/15 text-[10px] font-bold uppercase tracking-widest">
+                          <Trash2 className="h-3.5 w-3.5" /> Delete
+                        </button>
                       </div>
                     )}
                   </div>
@@ -594,7 +621,7 @@ function EnrollmentsTab({
 }
 
 /* ───────── GIFT CLAIMS TAB ───────── */
-function GiftClaimsTab({ gifts, rows, reload }: { gifts: GiftClaim[] | null; rows: Enrollment[] | null; reload: () => void }) {
+function GiftClaimsTab({ gifts, rows, reload, deleteGift }: { gifts: GiftClaim[] | null; rows: Enrollment[] | null; reload: () => void; deleteGift: (id: string, name: string) => void }) {
   const [convertTarget, setConvertTarget] = useState<GiftClaim | null>(null);
 
   const enrollMap = useMemo(() => {
@@ -658,6 +685,9 @@ function GiftClaimsTab({ gifts, rows, reload }: { gifts: GiftClaim[] | null; row
                               <Target className="h-3 w-3" /> Convert
                             </button>
                           )}
+                          <button onClick={() => deleteGift(g.id, g.full_name)} className="p-1.5 rounded text-[#FF3B3B] hover:bg-[#FF3B3B]/20" title="Delete gift claim">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -687,6 +717,9 @@ function GiftClaimsTab({ gifts, rows, reload }: { gifts: GiftClaim[] | null; row
                         <Target className="h-3 w-3" /> Convert
                       </button>
                     )}
+                    <button onClick={() => deleteGift(g.id, g.full_name)} className="ml-auto p-1.5 rounded text-[#FF3B3B] hover:bg-[#FF3B3B]/20" title="Delete gift claim">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 </div>
               ))}
