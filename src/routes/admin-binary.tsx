@@ -368,10 +368,11 @@ function isPartialGiftOnly(r: Enrollment) {
 }
 
 function EnrollmentsTab({
-  rows, updateRow, enrolledMobiles, gifts,
+  rows, updateRow, deleteRow, enrolledMobiles, gifts,
 }: {
   rows: Enrollment[] | null;
   updateRow: (id: string, patch: Partial<Enrollment>, label: string) => void;
+  deleteRow: (id: string, name: string) => void;
   enrolledMobiles: Set<string>;
   gifts: GiftClaim[] | null;
 }) {
