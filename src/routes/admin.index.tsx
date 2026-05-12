@@ -67,7 +67,15 @@ function AdminDashboard() {
     if (!isAdmin) return;
     load();
     const id = setInterval(load, 30_000);
-    return () => clearInterval(id);
+    const channel = supabase
+      .channel("admin-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "leads" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "gift_claims" }, () => load())
+      .subscribe();
+    return () => {
+      clearInterval(id);
+      supabase.removeChannel(channel);
+    };
   }, [isAdmin, load]);
 
   if (loading || !isAdmin) {
