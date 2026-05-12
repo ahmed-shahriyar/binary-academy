@@ -536,6 +536,11 @@ function EnrollmentsTab({
                         <NotesField value={r.notes} onSave={(n) => updateRow(r.id, { notes: n }, "✅ Notes saved")} />
                       </td>
                       <td className="px-3 py-2 text-[10px] text-[#00F5FF]/70 whitespace-nowrap">{fmtDate(r.created_at)}</td>
+                      <td className="px-3 py-2">
+                        <button onClick={() => deleteRow(r.id, r.name)} className="p-1.5 rounded text-[#FF3B3B] hover:bg-[#FF3B3B]/20" title="Delete enrollment">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
