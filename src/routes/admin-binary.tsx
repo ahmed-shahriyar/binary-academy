@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   Power, Search, Download, Phone, MessageCircle, Lock, Terminal,
   ChevronDown, ChevronUp, Hexagon, AlertTriangle, RefreshCw, Gift,
-  TrendingUp, BarChart3, Target, Zap, X,
+  TrendingUp, BarChart3, Target, Zap, X, Trash2,
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
