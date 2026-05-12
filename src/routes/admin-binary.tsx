@@ -495,7 +495,7 @@ function EnrollmentsTab({
               <table className="w-full text-xs">
                 <thead className="bg-[#00F5FF]/5 text-[#00F5FF] uppercase tracking-wider">
                   <tr>
-                    {["Name","SSC Roll","School","Batch","Course","Mobile","Status","Notes","Created"].map(h => (
+                    {["Name","SSC Roll","School","Batch","Course","Mobile","Status","Notes","Created","Actions"].map(h => (
                       <th key={h} className="text-left px-3 py-2 font-bold">{h}</th>
                     ))}
                   </tr>
