@@ -8,7 +8,7 @@ interface Props {
   videoId?: string;
 }
 
-export function DemoClassDialog({ videoId = "48u4hKMC2es" }: Props) {
+export function DemoClassDialog({ videoId = "HDGy0DPTD4o" }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
